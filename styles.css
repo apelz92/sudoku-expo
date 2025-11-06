@@ -1,0 +1,59 @@
+:root {
+    --background: rgb(50, 50, 50);
+    --cell-background: rgb(25, 25, 25);
+    --font-color: rgb(225, 225, 225);
+    --foreground: rgba(230, 69, 228, 0.2);
+    --cell-size: 40px;
+    --fontsize: 20px;
+}
+
+:focus {
+    outline: none;
+}
+
+#root {
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: 'Space Mono', Monaco, monospace;
+    background: var(--background);
+    color: #5da75d;
+    font-size: 16px;
+}
+
+input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--cell-size) - 2px);
+    position: relative;
+    text-align: center;
+    font-size: var(--fontsize) !important;
+    color: var(--font-color);
+}
+
+.sudoku {
+    display: flex;
+    flex-flow: row wrap;
+    width: calc((var(--cell-size) + 2px) * 9);
+    border: solid 4px var(--foreground);
+}
+
+.cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border: solid 1px var(--foreground);
+    position: relative;
+    text-align: center;
+    background: var(--cell-background);
+}
