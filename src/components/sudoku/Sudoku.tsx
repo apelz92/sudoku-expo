@@ -1,12 +1,14 @@
 import {View} from "react-native";
 import React from "react";
 import Cell from "./Cell";
+import DifficultyBar from "./DifficultyBar";
 
 type SudokuProps = {
     row: number
     column: number
     index: number
     value: number
+    difficulty: number
     grid: Object[]
 }
 
@@ -16,14 +18,18 @@ export default function Sudoku(props: SudokuProps) {
 
     function onCreate() {
         return (
-            <div key="sudoku" className="sudoku">
-                {puzzle.map((cell: any) => (
-                    <div key={cell.index} className={"cell cell"+cell.index+" row"+cell.row+" col"+cell.column}>
-                        <Cell {...cell} />
-                    </div>
-                    )
-                )}
-            </div>
+            <>
+                <DifficultyBar difficulty={props.difficulty}/>
+                <div key="sudoku" className="sudoku">
+                    {puzzle.map((cell: any) => (
+                            <div key={cell.index}
+                                 className={"cell cell" + cell.index + " row" + cell.row + " col" + cell.column}>
+                                <Cell {...cell} />
+                            </div>
+                        )
+                    )}
+                </div>
+            </>
         )
     }
 

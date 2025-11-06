@@ -39,6 +39,26 @@ input {
     color: var(--font-color);
 }
 
+.difficulty-bar {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    float: left;
+    position: relative;
+    background: var(--cell-background);
+    width:auto;
+}
+
+.difficulty {
+    text-align: center;
+    width: auto;
+    overflow: hidden;
+    padding: 5px;
+    background: var(--foreground);
+    border: 3px solid var(--cell-background);
+    border-right: 0;
+}
+
 .sudoku {
     display: flex;
     flex-flow: row wrap;

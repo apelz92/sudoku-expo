@@ -1,10 +1,11 @@
 import {TextInput} from "react-native";
 
 type CellProps = {
-    row: number,
-    column: number,
-    index: number,
-    value: number,
+    row: number
+    column: number
+    index: number
+    value: number
+    difficulty: number
 }
 
 export default function Cell(props: CellProps) {
