@@ -3,7 +3,6 @@ type DifficultyProps = {
     onClick?: () => void
 }
 
-
 export default function DifficultyBar(props: DifficultyProps) {
     return (
         <div className="difficulty-bar">

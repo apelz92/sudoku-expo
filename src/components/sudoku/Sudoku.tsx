@@ -1,5 +1,5 @@
-import {View} from "react-native";
-import React from "react";
+import {TextInput, View} from "react-native";
+import React, {useRef, useState} from "react";
 import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
 
@@ -13,8 +13,9 @@ type SudokuProps = {
 }
 
 export default function Sudoku(props: SudokuProps) {
-
     const puzzle = initBoard()
+    const [grid, setGrid] = useState(props.grid)
+    const refs = Array.from({ length: puzzle.length }, () => useRef<TextInput>(null));
 
     function onCreate() {
         return (
@@ -24,7 +25,7 @@ export default function Sudoku(props: SudokuProps) {
                     {puzzle.map((cell: any) => (
                             <div key={cell.index}
                                  className={"cell cell" + cell.index + " row" + cell.row + " col" + cell.column}>
-                                <Cell {...cell} />
+                                <Cell {...cell} grid={puzzle} id={"cell" + cell.index} refs={refs} />
                             </div>
                         )
                     )}
@@ -42,12 +43,11 @@ export default function Sudoku(props: SudokuProps) {
                     index: index,
                     row: row,
                     column: column,
-                    value: "0"
+                    value: ""
                 }
                 index++;
             }
         }
-        console.log(cells);
         return (
             cells
         );
