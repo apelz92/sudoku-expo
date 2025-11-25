@@ -1,31 +1,89 @@
 import {TextInput, View} from "react-native";
-import React, {useRef, useState} from "react";
+import React, {RefObject, useRef, useState} from "react";
 import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
+import {clearGrid, fillGrid, initGrid} from "../../utils/sudoku";
 
-type SudokuProps = {
-    row: number
-    column: number
-    index: number
-    value: number
-    difficulty: number
-    grid: Object[]
-}
+/**
+ * TODO - integrate logic from sudoku.ts
+ *      - functions for CellProps
+ *      - fix state management between difficulty buttons and cells
+ */
 
-export default function Sudoku(props: SudokuProps) {
-    const puzzle = initBoard()
-    const [grid, setGrid] = useState(props.grid)
-    const refs = Array.from({ length: puzzle.length }, () => useRef<TextInput>(null));
+export default function Sudoku() {
+    const [grid, setGrid] = useState(initGrid)
+    const refs = Array.from({length: grid.length}, () => useRef<TextInput>(null));
 
-    function onCreate() {
+    const useMutationObserver = (
+        ref: RefObject<any>,
+        callback: MutationCallback,
+        options = {
+            CharacterData: true,
+            childList: true,
+            subtree: true,
+            attributes: true,
+        }
+    ) => {
+        React.useEffect(() => {
+            if (ref.current) {
+                const observer = new MutationObserver(callback);
+                observer.observe(ref.current, options);
+                return () => observer.disconnect();
+            }
+        }, [ref]);
+    };
+
+    const [observed, setObserved] = useState(false)
+    refs.map((ref: RefObject<any>) => {
+        useMutationObserver(ref, (mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === "attributes") {
+                    if (!observed) {
+                        let index: number = 0;
+                        if (ref.current) {
+                            let currentId = ref.current.id;
+                            index = Number(currentId.match(/\d+/gi));
+                        }
+                        grid[index].value = String(ref.current.value);
+                        setObserved(true)
+                    }
+                }
+            }
+        })
+    })
+
+    function difficultyButtonClick() {
+        let numbers: number[][] = fillGrid()
+        setGrid(clearGrid)
+        for (let cell in grid) {
+            grid[cell].value = String(numbers[grid[cell].row][grid[cell].column]);
+            setGrid(grid)
+            let cellElement = document.getElementById("cell-" + cell);
+            cellElement?.setAttribute("value", grid[cell].value)
+        }
+    }
+
+    /*function handleChange(e: React.ChangeEvent<HTMLInputElement>, index: number, id: string) {
+
+    }*/
+
+    function renderSudoku() {
         return (
             <>
-                <DifficultyBar difficulty={props.difficulty}/>
+                <DifficultyBar onClick={difficultyButtonClick}/>
                 <div key="sudoku" className="sudoku">
-                    {puzzle.map((cell: any) => (
-                            <div key={cell.index}
-                                 className={"cell cell" + cell.index + " row" + cell.row + " col" + cell.column}>
-                                <Cell {...cell} grid={puzzle} id={"cell" + cell.index} refs={refs} />
+                    {grid.map((cell: any) => (
+                            <div
+                                key={cell.index}
+                                className={"cell index-" + cell.index + " row-" + cell.row + " col-" + cell.column}>
+                                <Cell
+                                    {...cell}
+                                    grid={grid}
+                                    id={"cell-" + cell.index}
+                                    ref={refs[cell.index]}
+                                    refs={refs}
+                                    //onChange={(e: any) => {handleChange(e, cell.index, cell.id)}}
+                                />
                             </div>
                         )
                     )}
@@ -34,28 +92,9 @@ export default function Sudoku(props: SudokuProps) {
         )
     }
 
-    function initBoard(): Object[] {
-        const cells: Object[] = []
-        let index = 0;
-        for (let row = 0; row < 9; row++) {
-            for (let column = 0; column < 9; column++) {
-                cells[index] = {
-                    index: index,
-                    row: row,
-                    column: column,
-                    value: ""
-                }
-                index++;
-            }
-        }
-        return (
-            cells
-        );
-    }
-
     return (
         <View>
-            { onCreate() }
+            {renderSudoku()}
         </View>
     );
 }

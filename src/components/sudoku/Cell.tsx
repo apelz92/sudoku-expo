@@ -6,33 +6,24 @@ type CellProps = {
     row: number
     column: number
     index: number
-    value: number
-    grid: gridItem[]
-    refs: RefObject<TextInput>[];
+    value: string
+    userValue: string
+    refs: RefObject<TextInput>[]
     handleFocus?: () => void
     handleBlur?: () => void
     handleKeyPress?: () => void
-}
-
-interface gridItem {
-    index: number;
-    row: number;
-    column: number;
-    value: string;
+    onChange?: () => void
 }
 
 export default function Cell(props: CellProps) {
-    const [grid] = useState(props.grid)
-    const initialValue = ""
-    const [value, setValue] = useState(initialValue)
+    const [value, setValue] = useState(props.value)
     function handleFocus(e: any) {
         e.preventDefault()
     }
     function handleKeyPress(e: any) {
         const arrowKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
-        if (/[1-9]/.test(e.code)) {
+        if (/[1-9]/.test(e.code) && !/F[1-9]/.test(e.code)) {
             setValue(e.key)
-            grid[props.index].value = e.key.toString()
         } else if (arrowKeys.includes(e.code)) {
             let targetIndex = props.index;
             if (e.code === "ArrowLeft") targetIndex = props.index > 0 ? props.index - 1 : props.refs.length - 1;
@@ -55,11 +46,10 @@ export default function Cell(props: CellProps) {
             }
             props.refs[targetIndex]?.current?.focus();
         } else if (e.code === "Delete" || e.code === "Backspace") {
-            setValue(" ")
-            grid[props.index].value = "";
+            setValue("")
         } else if (e.code === "KeyL") {
             console.log(props)
-        }
+        } else if (/F[1-9]/.test(e.code)) { }
         else {
             e.preventDefault()
         }
@@ -70,7 +60,9 @@ export default function Cell(props: CellProps) {
             value={value.toString()}
             ref={props.refs[props.index]}
             onFocus={handleFocus}
-            onKeyPress={handleKeyPress}>
+            onKeyPress={handleKeyPress}
+            onChange={props.onChange}
+            >
         </TextInput>
     )
 }

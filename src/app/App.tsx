@@ -1,21 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import Sudoku from "../components/sudoku/Sudoku";
 
-type Props = {
-    row: number
-    column: number
-    index: number
-    value: number
-    difficulty: number
-    grid: Object[]
-}
 
-export default function App(props: Props) {
 
+export default function App() {
     return (
         <View>
-            <Sudoku {...props}></Sudoku>
+            <Sudoku></Sudoku>
             <StatusBar/>
         </View>
     );

@@ -1,7 +1,7 @@
 :root {
     --background: rgb(50, 50, 50);
     --cell-background: rgb(25, 25, 25);
-    --cell-hover: rgb(48, 48, 48);
+    --cell-hover: rgba(255, 255, 255, 0.1);
     --cell-active: rgb(78, 78, 78);
     --font-color: rgb(225, 225, 225);
     --foreground: rgba(230, 69, 228, 0.2);
@@ -64,10 +64,18 @@ input {
     cursor: default;
 }
 
+.difficulty:hover {
+    background: var(--cell-hover);
+}
+
+.difficulty:active {
+    background: var(--cell-active);
+}
+
 .sudoku {
     display: flex;
     flex-flow: row wrap;
-    width: calc((var(--cell-size) + 2px) * 9);
+    width: calc(((var(--cell-size) + 2px) * 9) + 6px);
     border: solid 4px var(--foreground);
     cursor: default;
     caret-color: rgba(0, 0, 0, 0);
@@ -83,6 +91,16 @@ input {
     position: relative;
     text-align: center;
     background: var(--cell-background);
+}
+
+.cell.col-2,
+.cell.col-5 {
+    border-right-width: 4px;
+}
+
+.cell.row-2,
+.cell.row-5 {
+    border-bottom-width: 4px;
 }
 
 .cell:hover {
