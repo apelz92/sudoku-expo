@@ -2,7 +2,7 @@ import {TextInput, View} from "react-native";
 import React, {RefObject, useRef, useState} from "react";
 import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
-import {clearGrid, fillGrid, initGrid} from "../../utils/sudoku";
+import {buildSudoku, gridItem, initGrid} from "../../utils/sudoku";
 
 /**
  * TODO - integrate logic from sudoku.ts
@@ -11,7 +11,7 @@ import {clearGrid, fillGrid, initGrid} from "../../utils/sudoku";
  */
 
 export default function Sudoku() {
-    const [grid, setGrid] = useState(initGrid)
+    const [grid, setGrid] = useState(initGrid())
     const refs = Array.from({length: grid.length}, () => useRef<TextInput>(null));
 
     const useMutationObserver = (
@@ -52,20 +52,25 @@ export default function Sudoku() {
         })
     })
 
-    function difficultyButtonClick() {
-        let numbers: number[][] = fillGrid()
-        setGrid(clearGrid)
-        for (let cell in grid) {
-            grid[cell].value = String(numbers[grid[cell].row][grid[cell].column]);
-            setGrid(grid)
-            let cellElement = document.getElementById("cell-" + cell);
-            cellElement?.setAttribute("value", grid[cell].value)
-        }
+    function difficultyButtonClick(difficulty: number) {
+        const newGrid: gridItem[] = buildSudoku(grid, difficulty)
+        newGrid.map((cell) => {
+            if (cell.isVisible) cell.value = cell.hiddenValue
+            else if (!cell.isVisible) cell.value = "";
+            return cell
+        });
+        setGrid(newGrid)
     }
 
-    /*function handleChange(e: React.ChangeEvent<HTMLInputElement>, index: number, id: string) {
-
-    }*/
+    function updateCell(index: number, newValue: string) {
+        const updatedGrid = grid.map((cell) => {
+            if (index === cell.index) {
+                return { ...cell, value: newValue }
+            }
+            return cell;
+        });
+        setGrid(updatedGrid);
+    }
 
     function renderSudoku() {
         return (
@@ -82,7 +87,7 @@ export default function Sudoku() {
                                     id={"cell-" + cell.index}
                                     ref={refs[cell.index]}
                                     refs={refs}
-                                    //onChange={(e: any) => {handleChange(e, cell.index, cell.id)}}
+                                    updateValue={updateCell}
                                 />
                             </div>
                         )
