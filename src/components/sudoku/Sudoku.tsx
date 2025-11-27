@@ -14,7 +14,7 @@ export default function Sudoku() {
     const [grid, setGrid] = useState(initGrid())
     const refs = Array.from({length: grid.length}, () => useRef<TextInput>(null));
 
-    const useMutationObserver = (
+    /*const useMutationObserver = (
         ref: RefObject<any>,
         callback: MutationCallback,
         options = {
@@ -50,7 +50,7 @@ export default function Sudoku() {
                 }
             }
         })
-    })
+    })*/
 
     function difficultyButtonClick(difficulty: number) {
         const newGrid: gridItem[] = buildSudoku(grid, difficulty)
