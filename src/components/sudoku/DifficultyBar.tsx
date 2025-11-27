@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import Difficulty from "./Difficulty";
 
 type DifficultyProps = {

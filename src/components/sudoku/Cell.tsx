@@ -1,5 +1,5 @@
 import {TextInput} from "react-native";
-import {useState, RefObject, useEffect} from "react";
+import {RefObject} from "react";
 import {gridItem} from "../../utils/sudoku";
 
 type CellProps = {
