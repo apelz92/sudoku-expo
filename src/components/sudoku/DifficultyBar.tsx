@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import Difficulty from "./Difficulty";
 
 type DifficultyProps = {
-    onClick?: () => void
+    onClick?(difficulty: number): void
 }
 
 export default function DifficultyBar(props: DifficultyProps) {
