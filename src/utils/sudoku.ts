@@ -55,43 +55,13 @@ function initMatrix(): number[][] {
 /**
  * iterate over the board matrix to check if values of the input fields are identical to the values of the matrix
  */
-/*function checkSudoku() {
-    let correct = true;*/
-    /** if there are still empty input fields, do not compare values unless the highlight slider is enabled */
-    /*if(!emptyInputs || highlightNumbers.checked) {
-        for(let row = 0; row < numbers.length; row++) {
-            for(let column = 0; column < numbers[row].length; column++) {*/
-                /** get value of input fields by using Element ID ("sudo" + indexes+1) */
-                /*let elementID = "sudo" + (row+1) + (column+1);
-                let inputElement = document.getElementById(elementID);
-                let inputValue = Number(inputElement.value);
-                let number = numbers[row][column];
-
-                if (inputValue !== number && inputValue && highlightNumbers.checked) {
-                    inputElement.style.color = "rgb(255, 0, 0)";
-                }
-
-                if (inputValue !== number) {
-                    correct = false;
-                }
-                else {
-                    inputElement.style.color = "rgb(0, 0, 0)";
-                }
-            }
-        }*/
-        /** text shown on result display */
-        /*if(!emptyInputs) {
-            let resultMessage;
-            if (correct) {
-                resultMessage = "You win!"
-            } else {
-                resultMessage = "There are some errors in your solution."
-            }
-            result.style.display = "flex";
-            result.innerHTML = resultMessage;
+export function checkGrid(grid: gridItem[]) {
+    for (let cell of grid) {
+        if (cell.value !== cell.hiddenValue) {
+            return false;
         }
-    }
-}*/
+    } return true;
+}
 
 /**
  * reveal a random cell, if it's not empty. retry until empty cell to reveal is found
@@ -115,7 +85,7 @@ function initMatrix(): number[][] {
         emptyInputs = hasEmptyInputs();
     }
     if(!emptyInputs) {
-        checkSudoku();
+        checkGrid();
     }
 }*/
 

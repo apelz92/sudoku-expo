@@ -14,6 +14,7 @@ type CellProps = {
     onChange?: () => void
     grid: gridItem[]
     updateValue(index: number, e: any): void;
+    checkGrid(grid: gridItem[]): boolean;
 }
 
 export default function Cell(props: CellProps) {
@@ -49,6 +50,8 @@ export default function Cell(props: CellProps) {
             props.updateValue(props.index, "")
         } else if (e.code === "KeyL") {
             console.log("props:", props)
+        } else if (e.code === "KeyC") {
+            console.log("solution is", props.checkGrid)
         } else if (/F[1-9]/.test(e.code)) { }
         else {
             e.preventDefault()

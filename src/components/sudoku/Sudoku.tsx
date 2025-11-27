@@ -2,7 +2,7 @@ import {TextInput, View} from "react-native";
 import React, {RefObject, useRef, useState} from "react";
 import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
-import {buildSudoku, gridItem, initGrid} from "../../utils/sudoku";
+import {buildSudoku, checkGrid, gridItem, initGrid} from "../../utils/sudoku";
 
 /**
  * TODO - integrate logic from sudoku.ts
@@ -88,6 +88,7 @@ export default function Sudoku() {
                                     ref={refs[cell.index]}
                                     refs={refs}
                                     updateValue={updateCell}
+                                    checkGrid={checkGrid(grid)}
                                 />
                             </div>
                         )
