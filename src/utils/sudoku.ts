@@ -16,13 +16,15 @@ export interface gridItem {
     isVisible: boolean
 }
 
+export let storedGrids: gridItem[][] = new Array(5)
+
 /**
  * build sudoku using a difficulty parameter. the higher the difficulty, the less numbers are revealed
  * @param grid
  * @param {number} difficulty sets difficulty between 1-5
  */
-export function buildSudoku(grid: gridItem[], difficulty: number): gridItem[] {
-    grid = initGrid()
+export async function buildSudoku(difficulty: number): Promise<gridItem[]> {
+    const grid = initGrid()
     let solved: boolean = false;
     while (!solved) {
         let numbers = fillGrid();
@@ -36,6 +38,12 @@ export function buildSudoku(grid: gridItem[], difficulty: number): gridItem[] {
         solved = solve(newGrid);
         if (solved) { return newGrid; }
     } return grid;
+}
+
+export async function createStore() {
+    for (let difficulty = 0; difficulty < storedGrids.length; difficulty++) {
+        storedGrids[difficulty] = await buildSudoku(difficulty)
+    }
 }
 
 function initMatrix(): number[][] {
@@ -112,19 +120,19 @@ function makeNumbersVisible(grid: gridItem[], difficulty: number): gridItem[] {
     let gridHasVisible: boolean = hasVisible(grid)
     if(!gridHasVisible) {
         switch (difficulty) {
-            case 1:
+            case 0:
                 visibleNumbers = Math.floor((Math.random()) * 3) + 53;
                 break;
-            case 2:
+            case 1:
                 visibleNumbers = Math.floor((Math.random()) * 3) + 46;
                 break;
-            case 3:
+            case 2:
                 visibleNumbers = Math.floor((Math.random()) * 3) + 39;
                 break;
-            case 4:
+            case 3:
                 visibleNumbers = Math.floor((Math.random()) * 3) + 32;
                 break;
-            case 5:
+            case 4:
                 visibleNumbers = Math.floor((Math.random()) * 3) + 25;
                 break;
         }
@@ -311,7 +319,8 @@ function solve(grid: gridItem[]): boolean {
     let emptyCells = [];
     let emptyCellAmount = 0;
     for (let i = 0; i < numbers.length; i++) {
-        emptyCells.push(numbers[i].filter(isEmpty));
+        //emptyCells.push(numbers[i].filter(isEmpty));
+        emptyCells.push(numbers[i].filter((empty: any) => {return empty === 0}));
         emptyCellAmount += emptyCells[i].length;
     }
     if (emptyCellAmount > 64) { return isNotSolvable(2)}

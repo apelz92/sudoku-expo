@@ -7,23 +7,23 @@ type DifficultyProps = {
 
 export default function DifficultyBar(props: DifficultyProps) {
     const difficultyList = [{
-        difficulty: 1,
+        difficulty: 0,
         difficultyClass: "very-easy",
         difficultyText: "Very Easy"
     }, {
-        difficulty: 2,
+        difficulty: 1,
         difficultyClass: "easy",
         difficultyText: "Easy"
     }, {
-        difficulty: 3,
+        difficulty: 2,
         difficultyClass: "medium",
         difficultyText: "Medium"
     }, {
-        difficulty: 4,
+        difficulty: 3,
         difficultyclass: "hard",
         difficultyText: "Hard"
     }, {
-        difficulty: 5,
+        difficulty: 4,
         difficultyClass: "very-hard",
         difficultyText: "Very Hard"
     }]

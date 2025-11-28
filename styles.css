@@ -4,7 +4,8 @@
     --cell-hover: rgba(255, 255, 255, 0.1);
     --cell-active: rgb(78, 78, 78);
     --font-color: rgb(225, 225, 225);
-    --foreground: rgba(230, 69, 228, 0.2);
+    --foreground: rgba(223, 42, 220, 0.2);
+    --win-border: rgba(243, 202, 240, 0.2);
     --cell-size: 40px;
     --fontsize: 20px;
 }
@@ -82,6 +83,11 @@ input {
     border: solid 4px var(--foreground);
     cursor: default;
     caret-color: rgba(0, 0, 0, 0);
+}
+
+.win-border {
+    border: solid 4px var(--win-border);
+    width: calc(((var(--cell-size) + 2px) * 9) + 6px + 8px);
 }
 
 .cell {

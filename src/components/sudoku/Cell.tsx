@@ -1,23 +1,24 @@
 import {TextInput} from "react-native";
 import {RefObject} from "react";
-import {gridItem} from "../../utils/sudoku";
 
 type CellProps = {
     id: string
     row: number
     column: number
     index: number
+    value: string
+    ref: RefObject<TextInput>
     refs: RefObject<TextInput>[]
     handleFocus?: () => void
     handleBlur?: () => void
     handleKeyPress?: () => void
     onChange?: () => void
-    grid: gridItem[]
+    onChangeText?: () => void;
     updateValue(index: number, e: any): void;
-    checkGrid(grid: gridItem[]): boolean;
 }
 
 export default function Cell(props: CellProps) {
+
     function handleFocus(e: any) {
         e.preventDefault()
     }
@@ -50,8 +51,6 @@ export default function Cell(props: CellProps) {
             props.updateValue(props.index, "")
         } else if (e.code === "KeyL") {
             console.log("props:", props)
-        } else if (e.code === "KeyC") {
-            console.log("solution is", props.checkGrid)
         } else if (/F[1-9]/.test(e.code)) { }
         else {
             e.preventDefault()
@@ -59,11 +58,12 @@ export default function Cell(props: CellProps) {
     }
     return (
         <TextInput
-            id={props.grid[props.index].id}
-            value={props.grid[props.index].value}
-            ref={props.refs[props.index]}
+            id={props.id}
+            value={props.value}
+            ref={props.ref}
             onFocus={handleFocus}
             onKeyPress={handleKeyPress}
+            onChangeText={props.onChangeText}
             >
         </TextInput>
     )
