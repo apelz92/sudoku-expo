@@ -11,7 +11,7 @@ import {buildSudoku, checkGrid, createStore, initGrid, storedGrids} from "../../
 export default function Sudoku() {
 
     const [grid, setGrid] = useState(initGrid())
-    const [won, hasWon] = useState<boolean>(true)
+    const [won, hasWon] = useState<boolean>(false)
     const [loaded, componentLoaded] = useState(false)
     const refs = Array.from({length: grid.length}, () => useRef<TextInput>(null))
 
