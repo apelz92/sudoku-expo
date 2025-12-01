@@ -1,9 +1,9 @@
 /**
  * @desc basic sudoku logic that can generate and solve <some> sudokus
- * @todo remove/rewrite deprecated functions
- * @todo add missing doc/comments
- * @todo improve generation of sudoku to have a unique solution
- * @todo expand solve() algorithm to be able to solve every solvable sudoku
+ * TODO remove/rewrite deprecated functions
+ *      add missing doc/comments
+ *      improve generation of sudoku to have a unique solution
+ *      expand solve() algorithm to be able to solve every solvable sudoku
  **/
 
 export interface gridItem {
@@ -20,15 +20,13 @@ export let storedGrids: gridItem[][] = new Array(5)
 
 /**
  * build sudoku using a difficulty parameter. the higher the difficulty, the less numbers are revealed
- * @param grid
  * @param {number} difficulty sets difficulty between 1-5
  */
 export async function buildSudoku(difficulty: number): Promise<gridItem[]> {
-    const grid = initGrid()
     let solved: boolean = false;
     while (!solved) {
         let numbers = fillGrid();
-        let newGrid = grid.map((cell) => {
+        let newGrid = initGrid().map((cell) => {
             const {row, column} = indexToRowColumn(cell.index)
             cell.hiddenValue = String(numbers[row][column])
             cell.value = String(numbers[row][column]) // only for testing
@@ -37,7 +35,7 @@ export async function buildSudoku(difficulty: number): Promise<gridItem[]> {
         newGrid = makeNumbersVisible(newGrid, difficulty);
         solved = solve(newGrid);
         if (solved) { return newGrid; }
-    } return grid;
+    } return initGrid();
 }
 
 export async function createStore() {
@@ -95,18 +93,6 @@ export function checkGrid(grid: gridItem[]) {
     if(!emptyInputs) {
         checkGrid();
     }
-}*/
-
-/**
- *
- * @returns {boolean}
- */
-/*function hasEmptyInputs() {
-    for (let index = 0; index  < inputs.length; index++) {
-        if (!(inputs[index].value)) {
-            return true;
-        }
-    } return false;
 }*/
 
 /**
@@ -303,27 +289,16 @@ function hasVisible(grid: gridItem[]): boolean {
 
 /**
  *
- * @param empty
- * @returns {boolean}
- */
-function isEmpty(empty: any): boolean {
-    return empty === 0;
-}
-
-/**
- *
  */
 function solve(grid: gridItem[]): boolean {
-    //document.getElementById("solve").disabled = true;
     let numbers = writeMatrix(grid);
     let emptyCells = [];
     let emptyCellAmount = 0;
     for (let i = 0; i < numbers.length; i++) {
-        //emptyCells.push(numbers[i].filter(isEmpty));
         emptyCells.push(numbers[i].filter((empty: any) => {return empty === 0}));
         emptyCellAmount += emptyCells[i].length;
     }
-    if (emptyCellAmount > 64) { return isNotSolvable(2)}
+    if (emptyCellAmount > 64) { return false}
     let tries = 0;
     while(hasNull(numbers)) {
         for (let row = 0; row < numbers.length; row++) {
@@ -333,25 +308,13 @@ function solve(grid: gridItem[]): boolean {
                     if (candidates.length === 1) {
                         numbers[row][column] = candidates[0];
                     }
-                    if (candidates.length === 0) { return isNotSolvable(1); }
+                    if (candidates.length === 0) { return false; }
                 }
             }
         }
         tries++;
         if (tries > 20) { return false; }
     } return true;
-}
-
-/**
- *
- */
-function isNotSolvable(condition: number): boolean {
-    //result.style.display = "flex";
-    switch (condition) {
-        case 1: /*result.innerHTML = "Given sudoku board is not solvable";*/ return false;
-        case 2: /*result.innerHTML = "Need at least 17 numbers to solve";*/ return false;
-        default:  return false;
-    }
 }
 
 /**
@@ -385,23 +348,6 @@ export function initGrid(): gridItem[] {
     return (
         grid
     );
-}
-
-function readGrid(grid: gridItem[]): number[][] {
-    let numbers = initMatrix()
-    for (let cell of grid) {
-        numbers[cell.row][cell.column] = Number(cell.value);
-    }
-    return numbers;
-}
-
-function writeGrid(numbers: number[][]): gridItem[] {
-    let grid = initGrid();
-    grid.map((cell) => {
-        cell.hiddenValue = String(numbers[cell.row][cell.column]);
-        return cell;
-    })
-    return grid;
 }
 
 export function indexToRowColumn(index: number) {
