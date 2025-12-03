@@ -1,24 +1,26 @@
-import {TextInput, View} from "react-native";
+import {TextInput, View, StyleSheet} from "react-native";
 import React, {useEffect, useRef, useState} from "react";
 import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
-import {buildSudoku, checkGrid, createStore, initGrid, storedGrids} from "../../utils/sudoku";
+import {buildSudoku, checkGrid, createStore, gridItem, initGrid, storedGrids} from "../../utils/sudoku";
+import {COLORS} from "./theme";
 
 /**
- *
+ * TODO implement general mobile functionality
  */
 
 export default function Sudoku() {
 
-    const [grid, setGrid] = useState(initGrid())
+    const [grid, setGrid] = useState<gridItem[]>(initGrid())
     const [won, hasWon] = useState<boolean>(false)
-    const [loaded, componentLoaded] = useState(false)
+    const [loaded, componentloaded] = useState<boolean>(false)
     const refs = Array.from({length: grid.length}, () => useRef<TextInput>(null))
+    const { outerBorder, sudokuHeight, sudokuWidth, viewHeight } = useSizes()
 
     useEffect(() => {
         if (!loaded) {
             createStore().then()
-            componentLoaded(true);
+            componentloaded(true);
         }
     })
 
@@ -50,44 +52,60 @@ export default function Sudoku() {
     function renderSudoku() {
         return (
             <>
-
-                <div key="sudoku" className="sudoku">
+                <View key="sudoku"
+                      style={[
+                          styles.sudoku,
+                          {
+                              width: sudokuWidth,
+                              height: sudokuHeight,
+                              borderWidth: outerBorder,
+                          }]}
+                >
                     {grid.map((cell: any) => (
-                            <div
-                                key={cell.index}
-                                className={"cell index-" + cell.index + " row-" + cell.row + " col-" + cell.column}>
-                                <Cell
-                                    {...cell}
-                                    id={"cell-" + cell.index}
-                                    ref={refs[cell.index]}
-                                    updateValue={updateCell}
-                                    checkGrid={checkGrid(grid)}
-                                    onChangeText={onCellChange}
-                                />
-                            </div>
+                        <Cell {...cell}
+                              key={"cell-" + cell.index}
+                              id={"cell-" + cell.index}
+                              ref={refs[cell.index]}
+                              updateValue={updateCell}
+                              checkGrid={checkGrid(grid)}
+                              onChangeText={onCellChange}
+                              styles={styles}
+                        />
                         )
                     )}
-                </div>
-
+                </View>
             </>
         )
     }
 
-    if (won) {
-        return (
-            <View>
-                <DifficultyBar onClick={difficultyButtonClick}/>
-                <div key="won" className={"win-border"}>
-                    {renderSudoku()}
-                </div>
+    return (
+            <View style={[
+                styles.base,
+                {
+                    height: viewHeight,
+                    width: sudokuWidth,
+                }]}
+            >
+                <DifficultyBar
+                    onClick={difficultyButtonClick}
+                />
+                { renderSudoku() }
             </View>
-        );
-    } else {
-        return (
-            <View>
-                <DifficultyBar onClick={difficultyButtonClick}/>
-                {renderSudoku()}
-            </View>
-        );
-    }
+    );
 }
+
+const styles = StyleSheet.create({
+    base: {
+        flexDirection: "column",
+        justifyContent: "center",
+    },
+    sudoku: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "row",
+        flexWrap: "wrap",
+        borderColor: COLORS.borderColor,
+        userSelect: "none",
+    },
+});

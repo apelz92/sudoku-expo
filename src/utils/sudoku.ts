@@ -14,6 +14,8 @@ export interface gridItem {
     value: string
     hiddenValue: string
     isVisible: boolean
+    hasVerticalBorder: boolean
+    hasHorizontalBorder: boolean
 }
 
 export let storedGrids: gridItem[][] = new Array(5)
@@ -298,7 +300,7 @@ function solve(grid: gridItem[]): boolean {
         emptyCells.push(numbers[i].filter((empty: any) => {return empty === 0}));
         emptyCellAmount += emptyCells[i].length;
     }
-    if (emptyCellAmount > 64) { return false}
+    if (emptyCellAmount > 64) { return false }
     let tries = 0;
     while(hasNull(numbers)) {
         for (let row = 0; row < numbers.length; row++) {
@@ -341,7 +343,15 @@ export function initGrid(): gridItem[] {
                 column: column,
                 value: "",
                 hiddenValue: "",
-                isVisible: false
+                isVisible: false,
+                hasVerticalBorder: false,
+                hasHorizontalBorder: false,
+            }
+            if (column === 2 || column === 5) {
+                grid[index].hasVerticalBorder = true;
+            }
+            if (row === 2 || row === 5) {
+                grid[index].hasHorizontalBorder = true;
             }
         }
     }

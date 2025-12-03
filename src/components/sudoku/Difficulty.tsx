@@ -1,17 +1,67 @@
-import React from "react";
+import React, { useState } from "react";
+import { Text, StyleSheet, Pressable } from "react-native";
+import { COLORS } from "./theme";
+import { useSizes } from "./SizesContext";
 
 type DifficultyProps = {
-    difficulty: number
-    difficultyclass: string
-    difficultyText: string
-    onClick?(difficulty: number): void
-}
+    difficulty: number;
+    difficultyclass: string;
+    difficultyText: string;
+    isActive?: boolean;
+    onActive?: (active: number) => void;
+};
 
 export default function Difficulty(props: DifficultyProps) {
+    const [hover, setHover] = useState<boolean>(false);
+    const { difficultyBarHeight, difficultyPressableMarginRight, difficultyTextWidth, difficultyTextHardWidth, fontSize } = useSizes();
+    const difficultyIsHard: boolean = props.difficulty == 3;
+
+    function handlePress() {
+        if (props.onActive) {
+            props.onActive(props.difficulty);
+        }
+    }
+
     return (
-        <div
-            className={"difficulty difficulty-bar-" + props.difficultyclass}
-            onClick={() => props.onClick ? props.onClick(props.difficulty): null}>{props.difficultyText}
-        </div>
-    )
+        <Pressable
+            onHoverIn={() => setHover(true)}
+            onHoverOut={() => setHover(false)}
+            onPress={handlePress}
+            style={[
+                styles.base,
+                {
+                    backgroundColor:
+                        hover ? COLORS.borderColor : COLORS.cellBackground &&
+                        props.isActive ? COLORS.borderColor : COLORS.cellBackground,
+                    height: difficultyBarHeight,
+                    width: difficultyIsHard ? difficultyTextHardWidth : difficultyTextWidth,
+                    marginRight: difficultyPressableMarginRight,
+                },
+            ]}
+        >
+            <Text style={[styles.text, {fontSize: fontSize}]}>{props.difficultyText}</Text>
+        </Pressable>
+    );
 }
+
+const styles = StyleSheet.create({
+    base: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        marginRight: 3,
+        padding: 3,
+        borderStyle: "solid",
+        cursor: "auto",
+        userSelect: "none",
+    },
+    text: {
+        textAlign: "center",
+        textAlignVertical: "center",
+        fontFamily: "system-ui",
+        fontWeight: "700",
+        color: COLORS.fontColor,
+    },
+});

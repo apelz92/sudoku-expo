@@ -1,5 +1,7 @@
-import {TextInput} from "react-native";
-import {RefObject} from "react";
+import {TextInput, StyleSheet, Pressable} from "react-native";
+import {RefObject, useState} from "react";
+import {COLORS} from "./theme";
+import {useSizes} from "./SizesContext";
 
 type CellProps = {
     id: string
@@ -7,21 +9,20 @@ type CellProps = {
     column: number
     index: number
     value: string
+    hasVerticalBorder: boolean
+    hasHorizontalBorder: boolean
     ref: RefObject<TextInput>
     refs: RefObject<TextInput>[]
-    handleFocus?: () => void
-    handleBlur?: () => void
     handleKeyPress?: () => void
     onChange?: () => void
-    onChangeText?: () => void;
-    updateValue(index: number, e: any): void;
+    onChangeText?: () => void
+    updateValue:(index: number, e: any) => void
 }
 
 export default function Cell(props: CellProps) {
-
-    function handleFocus(e: any) {
-        e.preventDefault()
-    }
+    const [focus, setFocus] = useState<boolean>(false)
+    const [hover, setHover] = useState<boolean>(false)
+    const { innerBorder, blockBorders, cellSize, cellFontSize } = useSizes();
     function handleKeyPress(e: any) {
         const arrowKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
         if (/[1-9]/.test(e.code) && !/F[1-9]/.test(e.code)) {
@@ -57,14 +58,85 @@ export default function Cell(props: CellProps) {
         }
     }
     return (
-        <TextInput
-            id={props.id}
-            value={props.value}
-            ref={props.ref}
-            onFocus={handleFocus}
-            onKeyPress={handleKeyPress}
-            onChangeText={props.onChangeText}
-            >
-        </TextInput>
+        <Pressable
+            onHoverIn={() => setHover(true)}
+            onHoverOut={() => setHover(false)}
+            style={({ pressed }) => [
+                styles.cell,
+                props.hasVerticalBorder ? {
+                    borderRightWidth: blockBorders,
+                    borderRightColor: COLORS.borderColor,
+                } : null,
+                props.hasHorizontalBorder ? {
+                    borderBottomWidth: blockBorders,
+                    borderBottomColor: COLORS.borderColor,
+                } : null,
+                {
+                    backgroundColor: pressed ? COLORS.cellActive : COLORS.cellBackground &&
+                    hover ? COLORS.cellHover : COLORS.cellBackground,
+                    width: cellSize,
+                    height: cellSize,
+                    borderWidth: innerBorder,
+                },
+            ]}
+        >
+            <TextInput
+                id={props.id}
+                value={props.value}
+                ref={props.ref}
+                onFocus={() => setFocus(true)}
+                onBlur={() => setFocus(false)}
+                onKeyPress={handleKeyPress}
+                onChangeText={props.onChangeText}
+                style={[
+                    styles.input,
+                    props.hasVerticalBorder ?
+                        {width: cellSize - (innerBorder * 2) - blockBorders}
+                        : {width: cellSize - (innerBorder * 2)},
+                    props.hasHorizontalBorder ?
+                        {height: cellSize - (innerBorder * 2) - blockBorders}
+                        : {height: cellSize - (innerBorder * 2)},
+                    {
+                        backgroundColor: focus ? COLORS.cellActive : COLORS.cellBackground &&
+                        hover ? COLORS.cellHover : COLORS.cellBackground,
+                        fontSize: cellFontSize,
+                    }
+                ]}
+                selectionColor={"rgba(0,0,0,0)"}
+                >
+            </TextInput>
+        </Pressable>
     )
 }
+
+const styles = StyleSheet.create({
+    input: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingBottom: 4,
+        backgroundColor: COLORS.cellBackground,
+        position: "relative",
+        textAlign: "center",
+        color: COLORS.fontColor,
+        cursor: "auto",
+    },
+    cell: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderStyle: "solid",
+        borderColor: COLORS.innerBorderColor,
+        position: "relative",
+        textAlign: "center",
+        backgroundColor: COLORS.cellBackground,
+    },
+    verticalBorder: {
+        borderRightWidth: 3,
+        borderColor: COLORS.borderColor,
+    },
+    horizontalBorder: {
+        borderBottomWidth: 3,
+        borderColor: COLORS.borderColor,
+    },
+})
