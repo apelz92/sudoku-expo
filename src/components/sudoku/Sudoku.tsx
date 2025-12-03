@@ -4,9 +4,12 @@ import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
 import {buildSudoku, checkGrid, createStore, gridItem, initGrid, storedGrids} from "../../utils/sudoku";
 import {COLORS} from "./theme";
+import { useSizes } from "./SizesContext";
 
 /**
- * TODO implement general mobile functionality
+ * TODO - implement general mobile functionality
+ *      - add a row of number buttons for easier use on mobile devices
+ *      - add a confetti animation for win condition
  */
 
 export default function Sudoku() {
@@ -26,7 +29,7 @@ export default function Sudoku() {
 
     function onCellChange() {
         hasWon(checkGrid(grid))
-        console.log("won? ", won)
+        console.log("won:", won)
     }
 
     async function difficultyButtonClick(difficulty: number) {

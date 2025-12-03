@@ -24,14 +24,15 @@ export default function Cell(props: CellProps) {
     const [hover, setHover] = useState<boolean>(false)
     const { innerBorder, blockBorders, cellSize, cellFontSize } = useSizes();
     function handleKeyPress(e: any) {
+        const key = e.nativeEvent.key
         const arrowKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
-        if (/[1-9]/.test(e.code) && !/F[1-9]/.test(e.code)) {
-            props.updateValue(props.index, e.key)
-        } else if (arrowKeys.includes(e.code)) {
+        if (/[1-9]/.test(key) && !/F[1-9]/.test(key)) {
+            props.updateValue(props.index, key)
+        } else if (arrowKeys.includes(key)) {
             let targetIndex = props.index;
-            if (e.code === "ArrowLeft") targetIndex = props.index > 0 ? props.index - 1 : props.refs.length - 1;
-            if (e.code === "ArrowRight") targetIndex = (props.index + 1) % props.refs.length;
-            if (e.code === "ArrowUp") {
+            if (key === "ArrowLeft") targetIndex = props.index > 0 ? props.index - 1 : props.refs.length - 1;
+            if (key === "ArrowRight") targetIndex = (props.index + 1) % props.refs.length;
+            if (key === "ArrowUp") {
                 if (props.index - 9 >= 0) {
                     targetIndex = props.index - 9;
                 } else {
@@ -39,7 +40,7 @@ export default function Cell(props: CellProps) {
                     targetIndex = props.index % 9 > 0 ? bottomRowIndex - 1 : bottomRowIndex + 8;
                 }
             }
-            if (e.code === "ArrowDown") {
+            if (key === "ArrowDown") {
                 if (props.index + 9 < props.refs.length) {
                     targetIndex = props.index + 9;
                 } else {
@@ -48,15 +49,16 @@ export default function Cell(props: CellProps) {
                 }
             }
             props.refs[targetIndex]?.current?.focus();
-        } else if (e.code === "Delete" || e.code === "Backspace") {
+        } else if (key === "Delete" || key === "Backspace") {
             props.updateValue(props.index, "")
-        } else if (e.code === "KeyL") {
+        } else if (key === "KeyL") {
             console.log("props:", props)
-        } else if (/F[1-9]/.test(e.code)) { }
+        } else if (/F[1-9]/.test(key)) { e.preventDefault() }
         else {
             e.preventDefault()
         }
     }
+
     return (
         <Pressable
             onHoverIn={() => setHover(true)}
@@ -73,7 +75,7 @@ export default function Cell(props: CellProps) {
                 } : null,
                 {
                     backgroundColor: pressed ? COLORS.cellActive : COLORS.cellBackground &&
-                    hover ? COLORS.cellHover : COLORS.cellBackground,
+                        hover ? COLORS.cellHover : COLORS.cellBackground,
                     width: cellSize,
                     height: cellSize,
                     borderWidth: innerBorder,
@@ -86,6 +88,9 @@ export default function Cell(props: CellProps) {
                 ref={props.ref}
                 onFocus={() => setFocus(true)}
                 onBlur={() => setFocus(false)}
+                inputMode={"numeric"}
+                caretHidden={true}
+                cursorColor={"rbga(0,0,0,0)"}
                 onKeyPress={handleKeyPress}
                 onChangeText={props.onChangeText}
                 style={[
@@ -98,7 +103,8 @@ export default function Cell(props: CellProps) {
                         : {height: cellSize - (innerBorder * 2)},
                     {
                         backgroundColor: focus ? COLORS.cellActive : COLORS.cellBackground &&
-                        hover ? COLORS.cellHover : COLORS.cellBackground,
+                            hover ? COLORS.cellHover : COLORS.cellBackground,
+                        outlineWidth: 0,
                         fontSize: cellFontSize,
                     }
                 ]}
@@ -114,7 +120,7 @@ const styles = StyleSheet.create({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        paddingBottom: 4,
+        paddingBottom: 3,
         backgroundColor: COLORS.cellBackground,
         position: "relative",
         textAlign: "center",

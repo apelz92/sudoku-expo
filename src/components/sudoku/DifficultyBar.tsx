@@ -13,7 +13,6 @@ export default function DifficultyBar(props: DifficultyProps) {
 
     function handleActive(difficulty: number) {
         setActiveDifficulty(difficulty);
-        console.log("selected difficulty:", difficulty);
         if (props.onClick) {
             props.onClick(difficulty);
         }

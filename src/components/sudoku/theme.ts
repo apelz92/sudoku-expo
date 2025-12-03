@@ -2,11 +2,11 @@ import {Dimensions} from "react-native";
 
 export const COLORS = {
     appBackground: "rgb(28,13,28)",
-    cellBackground: "rgb(37,37,37)",
-    cellHover: "rgba(255, 255, 255, 0.1)",
-    cellActive: "rgb(78, 78, 78)",
+    cellBackground: "rgb(36,32,46)",
+    cellHover: "rgb(73,56,89)",
+    cellActive: "rgb(58,45,81)",
     fontColor: "rgb(225, 225, 225)",
-    borderColor: "rgb(101,36,100)",
+    borderColor: "rgb(90,33,89)",
     innerBorderColor: "rgb(62,30,62)",
 };
 
@@ -32,7 +32,7 @@ export function calculateSizes() {
     const cellFontSize = Math.floor(cellSize / 1.5)
     const fontSize = Math.floor(cellSize / 3.1)
     const difficultyBarHeight = cellSize
-    const difficultyPressableMarginRight = 4
+    const difficultyPressableMarginRight = 3
     const difficultyTextWidth = Math.floor((sudokuWidth + difficultyPressableMarginRight) / 5)
     const difficultyTextHardWidth = sudokuWidth - ((difficultyTextWidth + difficultyPressableMarginRight) * 4)
     const viewHeight = sudokuHeight + difficultyBarHeight
