@@ -5,11 +5,11 @@ import DifficultyBar from "./DifficultyBar";
 import {buildSudoku, checkGrid, createStore, gridItem, initGrid, storedGrids} from "../../utils/sudoku";
 import {COLORS} from "./theme";
 import { useSizes } from "./SizesContext";
+import {ConfettiFireworks} from "../Fireworks";
 
 /**
  * TODO - implement general mobile functionality
  *      - add a row of number buttons for easier use on mobile devices
- *      - add a confetti animation for win condition
  */
 
 export default function Sudoku() {
@@ -29,7 +29,9 @@ export default function Sudoku() {
 
     function onCellChange() {
         hasWon(checkGrid(grid))
-        console.log("won:", won)
+        if (won) {
+            hasWon(false)
+        }
     }
 
     async function difficultyButtonClick(difficulty: number) {
@@ -93,6 +95,7 @@ export default function Sudoku() {
                     onClick={difficultyButtonClick}
                 />
                 { renderSudoku() }
+                <ConfettiFireworks trigger={won}></ConfettiFireworks>
             </View>
     );
 }
