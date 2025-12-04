@@ -1,15 +1,16 @@
-import {TextInput, View, StyleSheet} from "react-native";
-import React, {useEffect, useRef, useState} from "react";
+import { TextInput, View, StyleSheet } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
 import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
-import {buildSudoku, checkGrid, createStore, gridItem, initGrid, storedGrids} from "../../utils/sudoku";
-import {COLORS} from "./theme";
-import { useSizes } from "./SizesContext";
-import {ConfettiFireworks} from "../Fireworks";
+import { buildSudoku, checkGrid, createStore, gridItem, initGrid, storedGrids } from "../../utils/sudoku";
+import { COLORS } from "./theme";
+import { useSizes } from "./ResponsiveDesign";
+import {ConfettiFireworks } from "../Fireworks";
 
 /**
  * TODO - implement general mobile functionality
  *      - add a row of number buttons for easier use on mobile devices
+ *      - generated sudokus should only have unique solutions
  */
 
 export default function Sudoku() {
@@ -27,15 +28,29 @@ export default function Sudoku() {
         }
     })
 
+/*    function inputsReadOnly(isReadOnly: boolean) {
+        const updatedGrid = grid.map((cell) => {
+            cell.isReadOnly = isReadOnly
+            return cell
+        });
+        setGrid(updatedGrid);
+    }*/
+
     function onCellChange() {
         hasWon(checkGrid(grid))
         if (won) {
+            const updatedGrid = grid.map((cell) => {
+                cell.isReadOnly = true
+                return cell
+            });
+            setGrid(updatedGrid);
             hasWon(false)
         }
     }
 
     async function difficultyButtonClick(difficulty: number) {
         storedGrids[difficulty].map((cell) => {
+            cell.isReadOnly = false
             if (cell.isVisible) cell.value = cell.hiddenValue
             else if (!cell.isVisible) cell.value = ""
             return cell

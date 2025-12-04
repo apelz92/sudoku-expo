@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import Difficulty from "./Difficulty";
 import {View, StyleSheet} from "react-native";
-import {useSizes} from "./SizesContext";
+import {useSizes} from "./ResponsiveDesign";
 
 type DifficultyProps = {
     onClick?(difficulty: number): void

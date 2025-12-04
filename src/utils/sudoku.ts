@@ -14,6 +14,7 @@ export interface gridItem {
     value: string
     hiddenValue: string
     isVisible: boolean
+    isReadOnly: boolean
     hasVerticalBorder: boolean
     hasHorizontalBorder: boolean
 }
@@ -344,6 +345,7 @@ export function initGrid(): gridItem[] {
                 value: "",
                 hiddenValue: "",
                 isVisible: false,
+                isReadOnly: false,
                 hasVerticalBorder: false,
                 hasHorizontalBorder: false,
             }

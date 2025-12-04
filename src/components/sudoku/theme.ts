@@ -1,13 +1,41 @@
 import {Dimensions} from "react-native";
 
 export const COLORS = {
-    appBackground: "rgb(28,13,28)",
+//  Theme 1
+/*    appBackground: "rgb(28,13,28)",
     cellBackground: "rgb(36,32,46)",
-    cellHover: "rgb(73,56,89)",
-    cellActive: "rgb(58,45,81)",
+    cellHover: "rgb(58,45,81)",
+    cellActive: "rgb(73,56,89)",
     fontColor: "rgb(225, 225, 225)",
     borderColor: "rgb(90,33,89)",
-    innerBorderColor: "rgb(62,30,62)",
+    innerBorderColor: "rgb(62,30,62)",*/
+
+//  Theme 2
+/*    appBackground: "#1c1a1d",
+    cellBackground: "#372d39",
+    cellHover: "#604257",
+    cellActive: "#6e5366",
+    fontColor: "rgb(225, 225, 225)",
+    borderColor: "#6c4662",
+    innerBorderColor: "#633657",*/
+
+//  Theme 3
+    appBackground: "#171723",
+    cellBackground: "#20272e",
+    cellHover: "#33354a",
+    cellActive: "#42455e",
+    fontColor: "#b2b3caff",
+    borderColor: "#42455e",
+    innerBorderColor: "#33354a",
+
+//  Theme 4
+/*    appBackground: "#1d1723",
+    cellBackground: "#27202e",
+    cellHover: "#3f334a",
+    cellActive: "#51425e",
+    fontColor: "#bfb2ca",
+    borderColor: "#51425e",
+    innerBorderColor: "#3f334a",*/
 };
 
 export function calculateSizes() {

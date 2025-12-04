@@ -1,5 +1,6 @@
 import confetti from "canvas-confetti"
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
+import {View} from "react-native";
 
 type FireworksProps = {
     trigger: boolean
@@ -41,6 +42,6 @@ export function ConfettiFireworks(props: FireworksProps) {
     }
 
     return (
-        <div className="confetti-fireworks"></div>
+        <View key="confetti-fireworks"></View>
     )
 }

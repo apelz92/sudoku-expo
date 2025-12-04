@@ -4,9 +4,9 @@ import { calculateSizes } from "./theme";
 
 type Sizes = ReturnType<typeof calculateSizes>;
 
-const SizesContext = createContext<Sizes>(calculateSizes());
+const ResponsiveContext = createContext<Sizes>(calculateSizes());
 
-export const SizesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ResponsiveDesign: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [sizes, setSizes] = useState<Sizes>(calculateSizes());
 
     useEffect(() => {
@@ -16,7 +16,7 @@ export const SizesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return () => subscription?.remove();
     }, []);
 
-    return <SizesContext.Provider value={sizes}>{children}</SizesContext.Provider>;
+    return <ResponsiveContext.Provider value={sizes}>{children}</ResponsiveContext.Provider>;
 };
 
-export const useSizes = () => useContext(SizesContext);
+export const useSizes = () => useContext(ResponsiveContext);

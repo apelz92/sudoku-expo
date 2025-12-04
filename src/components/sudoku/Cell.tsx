@@ -1,7 +1,7 @@
 import {TextInput, StyleSheet, Pressable} from "react-native";
 import {RefObject, useState} from "react";
 import {COLORS} from "./theme";
-import {useSizes} from "./SizesContext";
+import {useSizes} from "./ResponsiveDesign";
 
 type CellProps = {
     id: string
@@ -9,6 +9,7 @@ type CellProps = {
     column: number
     index: number
     value: string
+    isReadOnly: boolean
     hasVerticalBorder: boolean
     hasHorizontalBorder: boolean
     ref: RefObject<TextInput>
@@ -25,37 +26,41 @@ export default function Cell(props: CellProps) {
     const { innerBorder, blockBorders, cellSize, cellFontSize } = useSizes();
     function handleKeyPress(e: any) {
         const key = e.nativeEvent.key
-        const arrowKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
-        if (/[1-9]/.test(key) && !/F[1-9]/.test(key)) {
-            props.updateValue(props.index, key)
-        } else if (arrowKeys.includes(key)) {
-            let targetIndex = props.index;
-            if (key === "ArrowLeft") targetIndex = props.index > 0 ? props.index - 1 : props.refs.length - 1;
-            if (key === "ArrowRight") targetIndex = (props.index + 1) % props.refs.length;
-            if (key === "ArrowUp") {
-                if (props.index - 9 >= 0) {
-                    targetIndex = props.index - 9;
-                } else {
-                    const bottomRowIndex = (9 - 1) * 9 + props.index % 9;
-                    targetIndex = props.index % 9 > 0 ? bottomRowIndex - 1 : bottomRowIndex + 8;
+        if (!props.isReadOnly) {
+            const arrowKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+            if (/[1-9]/.test(key) && !/F[1-9]/.test(key)) {
+                props.ref.current.clear()
+                props.updateValue(props.index, key)
+            } else if (arrowKeys.includes(key)) {
+                let targetIndex = props.index;
+                if (key === "ArrowLeft") targetIndex = props.index > 0 ? props.index - 1 : props.refs.length - 1;
+                if (key === "ArrowRight") targetIndex = (props.index + 1) % props.refs.length;
+                if (key === "ArrowUp") {
+                    if (props.index - 9 >= 0) {
+                        targetIndex = props.index - 9;
+                    } else {
+                        const bottomRowIndex = (9 - 1) * 9 + props.index % 9;
+                        targetIndex = props.index % 9 > 0 ? bottomRowIndex - 1 : bottomRowIndex + 8;
+                    }
                 }
-            }
-            if (key === "ArrowDown") {
-                if (props.index + 9 < props.refs.length) {
-                    targetIndex = props.index + 9;
-                } else {
-                    const columnIndex = props.index % 9;
-                    targetIndex = columnIndex < 9 - 1 ? columnIndex + 1 : columnIndex - 8;
+                if (key === "ArrowDown") {
+                    if (props.index + 9 < props.refs.length) {
+                        targetIndex = props.index + 9;
+                    } else {
+                        const columnIndex = props.index % 9;
+                        targetIndex = columnIndex < 9 - 1 ? columnIndex + 1 : columnIndex - 8;
+                    }
                 }
+                props.refs[targetIndex]?.current?.focus();
+            } else if (key === "Delete" || key === "Backspace") {
+                props.ref.current.clear()
+                //props.updateValue(props.index, "")
+            } else if (key === "l") {
+                console.log("props:", props)
+            } else if (/F[1-9]/.test(key)) { }
+            else {
+                e.preventDefault()
             }
-            props.refs[targetIndex]?.current?.focus();
-        } else if (key === "Delete" || key === "Backspace") {
-            props.updateValue(props.index, "")
-        } else if (key === "KeyL") {
-            console.log("props:", props)
-        } else if (/F[1-9]/.test(key)) { e.preventDefault() }
-        else {
-            e.preventDefault()
         }
     }
 
@@ -68,10 +73,12 @@ export default function Cell(props: CellProps) {
                 props.hasVerticalBorder ? {
                     borderRightWidth: blockBorders,
                     borderRightColor: COLORS.borderColor,
+                    width: cellSize + blockBorders,
                 } : null,
                 props.hasHorizontalBorder ? {
                     borderBottomWidth: blockBorders,
                     borderBottomColor: COLORS.borderColor,
+                    height: cellSize + blockBorders,
                 } : null,
                 {
                     backgroundColor: pressed ? COLORS.cellActive : COLORS.cellBackground &&
@@ -84,6 +91,7 @@ export default function Cell(props: CellProps) {
         >
             <TextInput
                 id={props.id}
+                readOnly={props.isReadOnly}
                 value={props.value}
                 ref={props.ref}
                 onFocus={() => setFocus(true)}
@@ -96,11 +104,11 @@ export default function Cell(props: CellProps) {
                 style={[
                     styles.input,
                     props.hasVerticalBorder ?
-                        {width: cellSize - (innerBorder * 2) - blockBorders}
-                        : {width: cellSize - (innerBorder * 2)},
+                        {width: cellSize - innerBorder * 2 - blockBorders}
+                        : {width: cellSize - innerBorder * 2},
                     props.hasHorizontalBorder ?
-                        {height: cellSize - (innerBorder * 2) - blockBorders}
-                        : {height: cellSize - (innerBorder * 2)},
+                        {height: cellSize - innerBorder * 2 - blockBorders}
+                        : {height: cellSize - innerBorder * 2},
                     {
                         backgroundColor: focus ? COLORS.cellActive : COLORS.cellBackground &&
                             hover ? COLORS.cellHover : COLORS.cellBackground,
@@ -125,7 +133,6 @@ const styles = StyleSheet.create({
         position: "relative",
         textAlign: "center",
         color: COLORS.fontColor,
-        cursor: "auto",
     },
     cell: {
         display: "flex",

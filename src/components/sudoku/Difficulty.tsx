@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Text, StyleSheet, Pressable } from "react-native";
 import { COLORS } from "./theme";
-import { useSizes } from "./SizesContext";
+import { useSizes } from "./ResponsiveDesign";
 
 type DifficultyProps = {
     difficulty: number;
