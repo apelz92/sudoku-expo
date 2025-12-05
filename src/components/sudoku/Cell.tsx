@@ -1,7 +1,7 @@
-import {TextInput, StyleSheet, Pressable} from "react-native";
-import {RefObject, useState} from "react";
-import {COLORS} from "./theme";
-import {useSizes} from "./ResponsiveDesign";
+import { TextInput, StyleSheet, Pressable } from "react-native";
+import { RefObject, useState } from "react";
+import { COLORS } from "./theme";
+import { useSizes } from "./ResponsiveDesign";
 
 type CellProps = {
     id: string

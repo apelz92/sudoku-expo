@@ -1,6 +1,6 @@
 import confetti from "canvas-confetti"
-import {useEffect} from "react";
-import {View} from "react-native";
+import { useEffect } from "react";
+import { View } from "react-native";
 
 type FireworksProps = {
     trigger: boolean
