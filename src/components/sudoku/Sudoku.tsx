@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flexWrap: "wrap",
         borderColor: COLORS.borderColor,
+        backgroundColor: COLORS.borderColor,
         userSelect: "none",
     },
 });

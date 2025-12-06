@@ -1,4 +1,4 @@
-import { TextInput, StyleSheet, Pressable } from "react-native";
+import {TextInput, StyleSheet, Pressable, Platform} from "react-native";
 import { RefObject, useState } from "react";
 import { COLORS } from "./theme";
 import { useSizes } from "./ResponsiveDesign";
@@ -64,27 +64,36 @@ export default function Cell(props: CellProps) {
         }
     }
 
+    const paddingBottom = (() => {
+        if (Platform.OS === "android") {
+            return 2
+        }
+        else {
+            return 8
+        }
+    })()
+
     return (
         <Pressable
             onHoverIn={() => setHover(true)}
             onHoverOut={() => setHover(false)}
+            onPress={() => props.ref.current?.focus()}
             style={({ pressed }) => [
                 styles.cell,
                 props.hasVerticalBorder ? {
                     borderRightWidth: blockBorders,
                     borderRightColor: COLORS.borderColor,
                     width: cellSize + blockBorders,
-                } : null,
+                } : {width: cellSize},
                 props.hasHorizontalBorder ? {
                     borderBottomWidth: blockBorders,
                     borderBottomColor: COLORS.borderColor,
                     height: cellSize + blockBorders,
-                } : null,
+                } : {height: cellSize},
                 {
                     backgroundColor: pressed ? COLORS.cellActive : COLORS.cellBackground &&
+                        focus ? COLORS.cellActive : COLORS.cellBackground &&
                         hover ? COLORS.cellHover : COLORS.cellBackground,
-                    width: cellSize,
-                    height: cellSize,
                     borderWidth: innerBorder,
                 },
             ]}
@@ -104,16 +113,16 @@ export default function Cell(props: CellProps) {
                 style={[
                     styles.input,
                     props.hasVerticalBorder ?
-                        {width: cellSize - innerBorder * 2 - blockBorders}
-                        : {width: cellSize - innerBorder * 2},
+                        {width: cellSize + blockBorders}
+                        : {width: cellSize},
                     props.hasHorizontalBorder ?
-                        {height: cellSize - innerBorder * 2 - blockBorders}
-                        : {height: cellSize - innerBorder * 2},
+                        {height: cellSize + blockBorders}
+                        : {height: cellSize},
                     {
-                        backgroundColor: focus ? COLORS.cellActive : COLORS.cellBackground &&
-                            hover ? COLORS.cellHover : COLORS.cellBackground,
                         outlineWidth: 0,
+                        outlineColor: "transparent",
                         fontSize: cellFontSize,
+                        paddingBottom: paddingBottom,
                     }
                 ]}
                 selectionColor={"rgba(0,0,0,0)"}
@@ -128,8 +137,9 @@ const styles = StyleSheet.create({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        paddingBottom: 3,
-        backgroundColor: COLORS.cellBackground,
+        padding: 5,
+        margin: -1,
+        backgroundColor: "transparent",
         position: "relative",
         textAlign: "center",
         color: COLORS.fontColor,

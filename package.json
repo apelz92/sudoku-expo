@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
+    "eas": "^0.1.0",
     "expo": "~54.0.22",
     "expo-dev-client": "~6.0.16",
     "expo-status-bar": "~3.0.8",

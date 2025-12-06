@@ -20,11 +20,11 @@ export const COLORS = {
     innerBorderColor: "#633657",*/
 
 //  Theme 3
-    appBackground: "#171723",
+    appBackground: "#14141b",
     cellBackground: "#20272e",
     cellHover: "#33354a",
     cellActive: "#42455e",
-    fontColor: "#b2b3caff",
+    fontColor: "#c6c7d6",
     borderColor: "#42455e",
     innerBorderColor: "#33354a",
 
@@ -55,8 +55,8 @@ export function calculateSizes() {
             30
         )
     const blockBorders = cellSize < 45 ? 2 : 4
-    const sudokuWidth = cellSize * 9 + (outerBorder * 2)
-    const sudokuHeight = cellSize * 9 + (outerBorder * 2)
+    const sudokuWidth = cellSize * 9 + (outerBorder * 2) + (blockBorders * 2)
+    const sudokuHeight = cellSize * 9 + (outerBorder * 2) + (blockBorders * 2)
     const cellFontSize = Math.floor(cellSize / 1.5)
     const fontSize = Math.floor(cellSize / 3.1)
     const difficultyBarHeight = cellSize
