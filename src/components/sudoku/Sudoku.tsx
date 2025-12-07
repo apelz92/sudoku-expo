@@ -6,11 +6,10 @@ import { buildSudoku, checkGrid, createStore, gridItem, initGrid, storedGrids } 
 import { COLORS } from "./theme";
 import { useSizes } from "./ResponsiveDesign";
 import { ConfettiFireworks } from "../Fireworks";
+import InputButtons from "./InputButtons";
 
 /**
- * TODO - implement general mobile functionality
- *      - add a row of number buttons for easier use on mobile devices
- *      - generated sudokus should only have unique solutions
+ * TODO - generated sudokus should only have unique solutions
  */
 
 export default function Sudoku() {
@@ -19,14 +18,14 @@ export default function Sudoku() {
     const [activeDifficulty, setActiveDifficulty] = useState<number | null>(null);
     const [activeCell, setActiveCell] = useState<number | null>(null);
     const [won, hasWon] = useState<boolean>(false)
-    const [loaded, componentloaded] = useState<boolean>(false)
+    const [loaded, componentLoaded] = useState<boolean>(false)
     const refs = Array.from({length: grid.length}, () => useRef<TextInput>(null))
     const { outerBorder, sudokuHeight, sudokuWidth, viewHeight } = useSizes()
 
     useEffect(() => {
         if (!loaded) {
             createStore().then()
-            componentloaded(true);
+            componentLoaded(true);
         }
     }, [loaded])
 
@@ -115,6 +114,7 @@ export default function Sudoku() {
                     activeDifficulty={activeDifficulty}
                 />
                 { renderSudoku() }
+                <InputButtons activeCell={activeCell} updateCell={updateCell}></InputButtons>
                 <ConfettiFireworks trigger={won}></ConfettiFireworks>
             </View>
     );
