@@ -17,6 +17,7 @@ export default function Sudoku() {
 
     const [grid, setGrid] = useState<gridItem[]>(initGrid())
     const [activeDifficulty, setActiveDifficulty] = useState<number | null>(null);
+    const [activeCell, setActiveCell] = useState<number | null>(null);
     const [won, hasWon] = useState<boolean>(false)
     const [loaded, componentloaded] = useState<boolean>(false)
     const refs = Array.from({length: grid.length}, () => useRef<TextInput>(null))
@@ -60,6 +61,7 @@ export default function Sudoku() {
 
     async function difficultyButtonClick(difficulty: number) {
         hasWon(false)
+        setActiveCell(null)
         storedGrids[difficulty].map((cell) => {
             cell.isReadOnly = false
             if (cell.isVisible) cell.value = cell.hiddenValue
@@ -93,14 +95,16 @@ export default function Sudoku() {
                           }]}
                 >
                     {grid.map((cell: any) => (
-                        <Cell {...cell}
-                              key={"cell-" + cell.index}
-                              id={"cell-" + cell.index}
-                              ref={refs[cell.index]}
-                              refs={refs}
-                              updateValue={updateCell}
-                              checkGrid={checkGrid(grid)}
-                              styles={styles}
+                        <Cell
+                            {...cell}
+                            key={"cell-" + cell.index}
+                            id={"cell-" + cell.index}
+                            ref={refs[cell.index]}
+                            refs={refs}
+                            updateValue={updateCell}
+                            setActiveCell={setActiveCell}
+                            isActive={activeCell === cell.index}
+                            styles={styles}
                         />
                         )
                     )}

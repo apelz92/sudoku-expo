@@ -18,10 +18,11 @@ type CellProps = {
     onChange?: () => void
     onChangeText?: () => void
     updateValue:(index: number, e: any) => void
+    setActiveCell(index: number): void;
+    isActive: boolean;
 }
 
 export default function Cell(props: CellProps) {
-    const [focus, setFocus] = useState<boolean>(false)
     const [hover, setHover] = useState<boolean>(false)
     const { innerBorder, blockBorders, cellSize, cellFontSize } = useSizes();
     function handleKeyPress(e: any) {
@@ -92,7 +93,7 @@ export default function Cell(props: CellProps) {
                 } : {height: cellSize},
                 {
                     backgroundColor: pressed ? COLORS.cellActive : COLORS.cellBackground &&
-                        focus ? COLORS.cellActive : COLORS.cellBackground &&
+                        props.isActive ? COLORS.cellActive : COLORS.cellBackground &&
                         hover ? COLORS.cellHover : COLORS.cellBackground,
                     borderWidth: innerBorder,
                 },
@@ -103,8 +104,7 @@ export default function Cell(props: CellProps) {
                 readOnly={props.isReadOnly}
                 value={props.value}
                 ref={props.ref}
-                onFocus={() => setFocus(true)}
-                onBlur={() => setFocus(false)}
+                onFocus={() => props.setActiveCell(props.index)}
                 inputMode={"numeric"}
                 caretHidden={true}
                 cursorColor={"rbga(0,0,0,0)"}
