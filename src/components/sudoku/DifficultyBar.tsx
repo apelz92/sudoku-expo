@@ -5,7 +5,7 @@ import { useSizes } from "./ResponsiveDesign";
 
 type DifficultyProps = {
     onClick?(difficulty: number): void
-    updateActiveDifficulty?(difficulty: number): void
+    setActiveDifficulty?(difficulty: number): void
     activeDifficulty: number | null
 }
 
@@ -13,7 +13,7 @@ export default function DifficultyBar(props: DifficultyProps) {
     const { difficultyBarHeight, sudokuWidth } = useSizes()
 
     function handleActive(difficulty: number) {
-        props.updateActiveDifficulty?.(difficulty)
+        props.setActiveDifficulty?.(difficulty)
         if (props.onClick) {
             props.onClick(difficulty);
         }

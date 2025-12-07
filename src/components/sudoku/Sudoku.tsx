@@ -47,18 +47,6 @@ export default function Sudoku() {
         }
     }, [grid])
 
-/*    function inputsReadOnly(isReadOnly: boolean) {
-        const updatedGrid = grid.map((cell) => {
-            cell.isReadOnly = isReadOnly
-            return cell
-        });
-        setGrid(updatedGrid);
-    }*/
-
-    function updateActiveDifficulty(difficulty: number | null) {
-        setActiveDifficulty(difficulty)
-    }
-
     async function difficultyButtonClick(difficulty: number) {
         hasWon(false)
         setActiveCell(null)
@@ -123,7 +111,7 @@ export default function Sudoku() {
             >
                 <DifficultyBar
                     onClick={difficultyButtonClick}
-                    updateActiveDifficulty={updateActiveDifficulty}
+                    setActiveDifficulty={setActiveDifficulty}
                     activeDifficulty={activeDifficulty}
                 />
                 { renderSudoku() }
