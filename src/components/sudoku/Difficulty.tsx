@@ -5,7 +5,7 @@ import { useSizes } from "./ResponsiveDesign";
 
 type DifficultyProps = {
     difficulty: number;
-    difficultyclass: string;
+    difficultyClass: string;
     difficultyText: string;
     isActive?: boolean;
     onActive?: (active: number) => void;

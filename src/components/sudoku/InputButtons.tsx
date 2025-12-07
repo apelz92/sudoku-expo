@@ -1,37 +1,49 @@
-import { Pressable, StyleSheet, View, Text } from "react-native";
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import DraggableNumber from "./DraggableButton";
 import { COLORS } from "./theme";
 
 type InputButtonProps = {
-    activeCell: number | null,
-    updateCell: (index: number, newValue: string) => void,
-}
+    activeCell: number | null;
+    updateCell: (index: number, value: string) => void;
+    setDragValue: (v: string | null) => void;
+    handleDragMove: (x: number, y: number) => void;
+    handleDropRelease: (x: number, y: number) => void;
+};
 
-export default function InputButtons(props: InputButtonProps) {
-
+export default function InputButtons({activeCell, updateCell, setDragValue, handleDragMove, handleDropRelease,}: InputButtonProps) {
     return (
         <View style={styles.numberRow}>
-            {[1,2,3,4,5,6,7,8,9].map((num) => (
-                <Pressable
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <DraggableNumber
                     key={num}
-                    style={styles.numberButton}
-                    onPress={() => {
-                        if (props.activeCell !== null) props.updateCell(props.activeCell, String(num));
+                    value={String(num)}
+                    onTap={() => {
+                        if (activeCell !== null) {
+                            updateCell(activeCell, String(num));
+                        }
                     }}
-                >
-                    <Text style={styles.numberButtonText}>{num}</Text>
-                </Pressable>
+                    onDragStart={() => setDragValue(String(num))}
+                    onDragMove={(x, y) => handleDragMove(x, y)}
+                    onDragEnd={(x, y) => handleDropRelease(x, y)}
+                />
             ))}
 
-            <Pressable
-                style={[styles.numberButton, styles.clearButton]}
-                onPress={() => {
-                    if (props.activeCell !== null) props.updateCell(props.activeCell, "");
+            <DraggableNumber
+                value=""
+                label="Clear"
+                styleOverride={styles.clearButton}
+                onTap={() => {
+                    if (activeCell !== null) {
+                        updateCell(activeCell, "");
+                    }
                 }}
-            >
-                <Text style={styles.numberButtonText}>Clear</Text>
-            </Pressable>
+                onDragStart={() => setDragValue("")}
+                onDragMove={(x, y) => handleDragMove(x, y)}
+                onDragEnd={(x, y) => handleDropRelease(x, y)}
+            />
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -39,29 +51,38 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 12,
+        marginTop: 16,
         flexWrap: "wrap",
+        gap: 10,
     },
 
-    numberButton: {
-        width: 40,
-        height: 40,
+    button: {
+        width: 42,
+        height: 42,
+
         borderRadius: 6,
-        margin: 5,
-        backgroundColor: COLORS.cellBackground,
         borderWidth: 1,
         borderColor: COLORS.innerBorderColor,
+
+        backgroundColor: COLORS.cellBackground,  // same as cells
+
         justifyContent: "center",
         alignItems: "center",
+
+        shadowColor: "#000",
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 3,
     },
 
     clearButton: {
-        backgroundColor: COLORS.borderColor,
+        backgroundColor: COLORS.borderColor,  // same as thicker block borders
     },
 
-    numberButtonText: {
+    buttonText: {
         color: COLORS.fontColor,
         fontSize: 20,
-        fontWeight: "bold",
+        fontWeight: "700",
     },
-})
+});

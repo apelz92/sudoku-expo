@@ -17,10 +17,15 @@ export default function Sudoku() {
     const [grid, setGrid] = useState<gridItem[]>(initGrid())
     const [activeDifficulty, setActiveDifficulty] = useState<number | null>(null);
     const [activeCell, setActiveCell] = useState<number | null>(null);
+    const [dragValue, setDragValue] = useState<string | null>(null);
+    const [hoveredCell, setHoveredCell] = useState<number | null>(null);
     const [won, hasWon] = useState<boolean>(false)
     const [loaded, componentLoaded] = useState<boolean>(false)
     const refs = Array.from({length: grid.length}, () => useRef<TextInput>(null))
     const { outerBorder, sudokuHeight, sudokuWidth, viewHeight } = useSizes()
+    const cellLayouts = useRef<
+        { x: number; y: number; width: number; height: number; isReadOnly: boolean }[]
+    >([]);
 
     useEffect(() => {
         if (!loaded) {
@@ -69,6 +74,62 @@ export default function Sudoku() {
         setGrid(updatedGrid);
     }
 
+    function handleDragMove(globalX: number, globalY: number) {
+        // debug - show pointer and some layouts
+        // eslint-disable-next-line no-console
+        console.log("dragMove:", { x: globalX, y: globalY });
+        // show first 3 cell rects for quick inspection
+        // eslint-disable-next-line no-console
+        console.log("cellLayouts[0..3]:", cellLayouts.current.slice(0,4));
+        let newHover: number | null = null;
+
+        cellLayouts.current.forEach((layout, index) => {
+            if (!layout) return;
+            const insideX = globalX >= layout.x && globalX <= layout.x + layout.width;
+            const insideY = globalY >= layout.y && globalY <= layout.y + layout.height;
+            if (insideX && insideY) newHover = index;
+        });
+
+        if (newHover !== hoveredCell) setHoveredCell(newHover);
+    }
+
+    function handleDropRelease(globalX: number, globalY: number) {
+        // eslint-disable-next-line no-console
+        console.log("dropRelease at:", { x: globalX, y: globalY });
+        // eslint-disable-next-line no-console
+        console.log("cellRects:", cellLayouts.current.slice(0,6));
+        if (dragValue === null) {
+            setHoveredCell(null);
+            return;
+        }
+
+        let targetIndex: number | null = null;
+
+        cellLayouts.current.forEach((layout, index) => {
+            if (!layout) return;
+            const insideX = globalX >= layout.x && globalX <= layout.x + layout.width;
+            const insideY = globalY >= layout.y && globalY <= layout.y + layout.height;
+            if (insideX && insideY) targetIndex = index;
+        });
+
+        // eslint-disable-next-line no-console
+        console.log("detected targetIndex:", targetIndex);
+
+        if (targetIndex !== null) {
+            const target = cellLayouts.current[targetIndex];
+            if (!target?.isReadOnly) {
+                updateCell(targetIndex, dragValue);
+            } else {
+                // eslint-disable-next-line no-console
+                console.log("target was read-only, refusing drop");
+            }
+        }
+
+        setDragValue(null);
+        setHoveredCell(null);
+    }
+
+
     function renderSudoku() {
         return (
             <>
@@ -82,17 +143,27 @@ export default function Sudoku() {
                           }]}
                 >
                     {grid.map((cell: any) => (
-                        <Cell
-                            {...cell}
-                            key={"cell-" + cell.index}
-                            id={"cell-" + cell.index}
-                            ref={refs[cell.index]}
-                            refs={refs}
-                            updateValue={updateCell}
-                            setActiveCell={setActiveCell}
-                            isActive={activeCell === cell.index}
-                            styles={styles}
-                        />
+                            <Cell
+                                {...cell}
+                                key={"cell-" + cell.index}
+                                id={"cell-" + cell.index}
+                                ref={refs[cell.index]}
+                                refs={refs}
+                                updateValue={updateCell}
+                                setActiveCell={setActiveCell}
+                                isActive={activeCell === cell.index}
+                                isHovered={hoveredCell === cell.index}
+                                onLayoutCell={(index, layout, isReadOnly) => {
+                                    cellLayouts.current[index] = {
+                                        x: layout.x,
+                                        y: layout.y,
+                                        width: layout.width,
+                                        height: layout.height,
+                                        isReadOnly,
+                                    };
+                                }}
+                            />
+
                         )
                     )}
                 </View>
@@ -114,7 +185,14 @@ export default function Sudoku() {
                     activeDifficulty={activeDifficulty}
                 />
                 { renderSudoku() }
-                <InputButtons activeCell={activeCell} updateCell={updateCell}></InputButtons>
+                <InputButtons
+                    activeCell={activeCell}
+                    updateCell={updateCell}
+                    setDragValue={setDragValue}
+                    handleDragMove={handleDragMove}
+                    handleDropRelease={handleDropRelease}
+                />
+
                 <ConfettiFireworks trigger={won}></ConfettiFireworks>
             </View>
     );

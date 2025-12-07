@@ -1,83 +1,52 @@
-import {TextInput, StyleSheet, Pressable, Platform} from "react-native";
-import { RefObject, useState } from "react";
+import React, { RefObject, useEffect } from "react";
+import { TextInput, StyleSheet, Pressable, Platform } from "react-native";
 import { COLORS } from "./theme";
 import { useSizes } from "./ResponsiveDesign";
 
 type CellProps = {
-    id: string
-    row: number
-    column: number
-    index: number
-    value: string
-    isReadOnly: boolean
-    hasVerticalBorder: boolean
-    hasHorizontalBorder: boolean
-    ref: RefObject<TextInput>
-    refs: RefObject<TextInput>[]
-    handleKeyPress?: () => void
-    onChange?: () => void
-    onChangeText?: () => void
-    updateValue:(index: number, e: any) => void
-    setActiveCell(index: number): void;
-    isActive: boolean;
+    id: string;
+    row: number;
+    column: number;
+    index: number;
+    value: string;
+    isReadOnly: boolean;
+    hasVerticalBorder: boolean;
+    hasHorizontalBorder: boolean;
+    ref: RefObject<TextInput>;       // TextInput ref passed from parent
+    refs: RefObject<TextInput>[];
+    updateValue:(index: number, e: any) => void;
+    setActiveCell: (index: number) => void;
+    isActive?: boolean;
+    isHovered?: boolean;
+    onLayoutCell: (index: number, layout: { x:number, y:number, width:number, height:number }, isReadOnly: boolean) => void;
 }
 
 export default function Cell(props: CellProps) {
-    const [hover, setHover] = useState<boolean>(false)
     const { innerBorder, blockBorders, cellSize, cellFontSize } = useSizes();
-    function handleKeyPress(e: any) {
-        const key = e.nativeEvent.key
-        if (!props.isReadOnly) {
-            const arrowKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
-            if (/[1-9]/.test(key) && !/F[1-9]/.test(key)) {
-                props.ref.current.clear()
-                props.updateValue(props.index, key)
-            } else if (arrowKeys.includes(key)) {
-                let targetIndex = props.index;
-                if (key === "ArrowLeft") targetIndex = props.index > 0 ? props.index - 1 : props.refs.length - 1;
-                if (key === "ArrowRight") targetIndex = (props.index + 1) % props.refs.length;
-                if (key === "ArrowUp") {
-                    if (props.index - 9 >= 0) {
-                        targetIndex = props.index - 9;
-                    } else {
-                        const bottomRowIndex = (9 - 1) * 9 + props.index % 9;
-                        targetIndex = props.index % 9 > 0 ? bottomRowIndex - 1 : bottomRowIndex + 8;
-                    }
-                }
-                if (key === "ArrowDown") {
-                    if (props.index + 9 < props.refs.length) {
-                        targetIndex = props.index + 9;
-                    } else {
-                        const columnIndex = props.index % 9;
-                        targetIndex = columnIndex < 9 - 1 ? columnIndex + 1 : columnIndex - 8;
-                    }
-                }
-                props.refs[targetIndex]?.current?.focus();
-            } else if (key === "Delete" || key === "Backspace") {
-                props.ref.current.clear()
-                //props.updateValue(props.index, "")
-            } else if (key === "l") {
-                console.log("props:", props)
-            } else if (/F[1-9]/.test(key)) { }
-            else {
-                e.preventDefault()
-            }
-        }
-    }
 
-    const paddingBottom = (() => {
-        if (Platform.OS === "android") {
-            return 2
+    const paddingBottom = Platform.OS === "android" ? 2 : 8;
+
+    const measureAndReport = () => {
+        const target = props.ref?.current;
+        if (!target || typeof target.measureInWindow !== "function") return;
+        try {
+            target.measureInWindow((x, y, width, height) => {
+                props.onLayoutCell(props.index, { x, y, width, height }, props.isReadOnly);
+            });
+        } catch (err) {
         }
-        else {
-            return 8
-        }
-    })()
+    };
+
+    useEffect(() => {
+        const t = setTimeout(() => measureAndReport(), 50);
+        return () => clearTimeout(t);
+    }, []);
 
     return (
         <Pressable
-            onHoverIn={() => setHover(true)}
-            onHoverOut={() => setHover(false)}
+            onLayout={() => {
+                setTimeout(() => measureAndReport(), 0);
+            }}
             onPress={() => props.ref.current?.focus()}
             style={({ pressed }) => [
                 styles.cell,
@@ -92,44 +61,41 @@ export default function Cell(props: CellProps) {
                     height: cellSize + blockBorders,
                 } : {height: cellSize},
                 {
-                    backgroundColor: pressed ? COLORS.cellActive : COLORS.cellBackground &&
-                        props.isActive ? COLORS.cellActive : COLORS.cellBackground &&
-                        hover ? COLORS.cellHover : COLORS.cellBackground,
+                    backgroundColor:
+                        pressed ? COLORS.cellActive :
+                            props.isActive ? COLORS.cellActive :
+                                props.isHovered ? COLORS.cellHover :
+                                    COLORS.cellBackground,
                     borderWidth: innerBorder,
                 },
             ]}
         >
             <TextInput
                 id={props.id}
-                readOnly={props.isReadOnly}
+                editable={!props.isReadOnly}
                 value={props.value}
                 ref={props.ref}
                 onFocus={() => props.setActiveCell(props.index)}
                 inputMode={"numeric"}
                 caretHidden={true}
-                cursorColor={"rbga(0,0,0,0)"}
-                onKeyPress={handleKeyPress}
-                onChangeText={props.onChangeText}
+                cursorColor={"rgba(0,0,0,0)"}
+                onKeyPress={(e) => {
+                    const key = (e.nativeEvent as any).key;
+                    if (!props.isReadOnly && /[1-9]/.test(key)) {
+                        props.ref.current?.clear();
+                        props.updateValue(props.index, key);
+                    }
+                }}
                 style={[
                     styles.input,
-                    props.hasVerticalBorder ?
-                        {width: cellSize + blockBorders}
-                        : {width: cellSize},
-                    props.hasHorizontalBorder ?
-                        {height: cellSize + blockBorders}
-                        : {height: cellSize},
-                    {
-                        outlineWidth: 0,
-                        outlineColor: "transparent",
-                        fontSize: cellFontSize,
-                        paddingBottom: paddingBottom,
-                    }
+                    props.hasVerticalBorder ? { width: cellSize + blockBorders } : { width: cellSize },
+                    props.hasHorizontalBorder ? { height: cellSize + blockBorders } : { height: cellSize },
+                    { outlineWidth: 0, outlineColor: "transparent", fontSize: cellFontSize, paddingBottom }
                 ]}
                 selectionColor={"rgba(0,0,0,0)"}
-                >
-            </TextInput>
+            />
         </Pressable>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -154,12 +120,4 @@ const styles = StyleSheet.create({
         textAlign: "center",
         backgroundColor: COLORS.cellBackground,
     },
-    verticalBorder: {
-        borderRightWidth: 3,
-        borderColor: COLORS.borderColor,
-    },
-    horizontalBorder: {
-        borderBottomWidth: 3,
-        borderColor: COLORS.borderColor,
-    },
-})
+});

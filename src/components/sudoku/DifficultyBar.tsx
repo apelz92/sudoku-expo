@@ -33,7 +33,7 @@ export default function DifficultyBar(props: DifficultyProps) {
                 <Difficulty
                     key={index}
                     difficulty={index}
-                    difficultyclass={option.difficultyClass}
+                    difficultyClass={option.difficultyClass}
                     difficultyText={option.difficultyText}
                     isActive={props.activeDifficulty === index}
                     onActive={handleActive}
