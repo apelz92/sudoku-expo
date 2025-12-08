@@ -21,10 +21,12 @@ export const COLORS = {
 
 //  Theme 3
     appBackground: "#14141b",
-    cellBackground: "#20272e",
+    cellPrimaryBackground: "#20272e",
+    cellSecondaryBackground: "#1f2229",
     cellHover: "#33354a",
     cellActive: "#42455e",
-    fontColor: "#c6c7d6",
+    primaryFontColor: "#c6c7d6",
+    secondaryFontColor: "#aab2ed",
     borderColor: "#42455e",
     innerBorderColor: "#33354a",
 
@@ -47,7 +49,7 @@ export function calculateSizes() {
             Math.min(
                 Math.floor(
                     Math.min(
-                        height / 9 - height / 9 * 0.12, width / 9 - 1
+                        (height / 9) - ((height / 9) * 0.285), width / 9 - 1
                     )
                 ),
                 60
@@ -63,7 +65,7 @@ export function calculateSizes() {
     const difficultyPressableMarginRight = 3
     const difficultyTextWidth = Math.floor((sudokuWidth + difficultyPressableMarginRight) / 5)
     const difficultyTextHardWidth = sudokuWidth - ((difficultyTextWidth + difficultyPressableMarginRight) * 4)
-    const viewHeight = sudokuHeight + difficultyBarHeight
+    const viewHeight = sudokuHeight + difficultyBarHeight + Math.floor(cellSize * 2.5)
 
     return {
         outerBorder,

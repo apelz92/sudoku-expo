@@ -21,17 +21,29 @@ type CellProps = {
     onLayoutCell: (index: number, layout: { x:number, y:number, width:number, height:number }, isReadOnly: boolean) => void;
 }
 
-export default function Cell(props: CellProps) {
+export default function Cell({
+                                 isActive,
+                                 isHovered,
+                                 isReadOnly,
+                                 ...props
+                             }: CellProps) {
     const { innerBorder, blockBorders, cellSize, cellFontSize } = useSizes();
 
     const paddingBottom = Platform.OS === "android" ? 2 : 8;
+
+    const getCellBackgroundColor = () => {
+        if (isActive) return COLORS.cellActive;
+        if (isHovered) return COLORS.cellHover;
+        if (isReadOnly) return COLORS.cellSecondaryBackground;
+        return COLORS.cellPrimaryBackground;
+    };
 
     const measureAndReport = () => {
         const target = props.ref?.current;
         if (!target || typeof target.measureInWindow !== "function") return;
         try {
             target.measureInWindow((x, y, width, height) => {
-                props.onLayoutCell(props.index, { x, y, width, height }, props.isReadOnly);
+                props.onLayoutCell(props.index, { x, y, width, height }, isReadOnly);
             });
         } catch (err) {
         }
@@ -48,7 +60,7 @@ export default function Cell(props: CellProps) {
                 setTimeout(() => measureAndReport(), 0);
             }}
             onPress={() => props.ref.current?.focus()}
-            style={({ pressed }) => [
+            style={() => [
                 styles.cell,
                 props.hasVerticalBorder ? {
                     borderRightWidth: blockBorders,
@@ -61,18 +73,14 @@ export default function Cell(props: CellProps) {
                     height: cellSize + blockBorders,
                 } : {height: cellSize},
                 {
-                    backgroundColor:
-                        pressed ? COLORS.cellActive :
-                            props.isActive ? COLORS.cellActive :
-                                props.isHovered ? COLORS.cellHover :
-                                    COLORS.cellBackground,
+                    backgroundColor: getCellBackgroundColor(),
                     borderWidth: innerBorder,
                 },
             ]}
         >
             <TextInput
                 id={props.id}
-                editable={!props.isReadOnly}
+                editable={!isReadOnly}
                 value={props.value}
                 ref={props.ref}
                 onFocus={() => props.setActiveCell(props.index)}
@@ -82,7 +90,7 @@ export default function Cell(props: CellProps) {
                 cursorColor={"rgba(0,0,0,0)"}
                 onKeyPress={(e) => {
                     const key = (e.nativeEvent as any).key;
-                    if (!props.isReadOnly && /[1-9]/.test(key)) {
+                    if (!isReadOnly && /[1-9]/.test(key)) {
                         props.ref.current?.clear();
                         props.updateValue(props.index, key);
                     }
@@ -91,6 +99,7 @@ export default function Cell(props: CellProps) {
                     styles.input,
                     props.hasVerticalBorder ? { width: cellSize + blockBorders } : { width: cellSize },
                     props.hasHorizontalBorder ? { height: cellSize + blockBorders } : { height: cellSize },
+                    isReadOnly ? { color: COLORS.primaryFontColor } : { color: COLORS.secondaryFontColor },
                     { outlineWidth: 0, outlineColor: "transparent", fontSize: cellFontSize, paddingBottom }
                 ]}
                 selectionColor={"rgba(0,0,0,0)"}
@@ -109,7 +118,7 @@ const styles = StyleSheet.create({
         backgroundColor: "transparent",
         position: "relative",
         textAlign: "center",
-        color: COLORS.fontColor,
+        color: COLORS.primaryFontColor,
     },
     cell: {
         display: "flex",
@@ -119,6 +128,6 @@ const styles = StyleSheet.create({
         borderColor: COLORS.innerBorderColor,
         position: "relative",
         textAlign: "center",
-        backgroundColor: COLORS.cellBackground,
+        backgroundColor: COLORS.cellPrimaryBackground,
     },
 });

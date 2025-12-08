@@ -31,8 +31,8 @@ export default function Difficulty(props: DifficultyProps) {
                 styles.base,
                 {
                     backgroundColor:
-                        hover ? COLORS.borderColor : COLORS.cellBackground &&
-                        props.isActive ? COLORS.borderColor : COLORS.cellBackground,
+                        hover ? COLORS.borderColor : COLORS.cellPrimaryBackground &&
+                        props.isActive ? COLORS.borderColor : COLORS.cellPrimaryBackground,
                     height: difficultyBarHeight,
                     width: difficultyIsHard ? difficultyTextHardWidth : difficultyTextWidth,
                     marginRight: difficultyPressableMarginRight,
@@ -62,6 +62,6 @@ const styles = StyleSheet.create({
         textAlignVertical: "center",
         fontFamily: "system-ui",
         fontWeight: "700",
-        color: COLORS.fontColor,
+        color: COLORS.primaryFontColor,
     },
 });
