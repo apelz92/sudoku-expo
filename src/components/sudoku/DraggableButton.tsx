@@ -1,5 +1,5 @@
 import React from "react";
-import {Text, StyleSheet, StyleProp, ViewStyle} from "react-native";
+import { Text, StyleSheet, StyleProp, ViewStyle } from "react-native";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -11,7 +11,8 @@ import {
     Gesture,
     GestureDetector,
 } from "react-native-gesture-handler";
-import {COLORS} from "./theme";
+import { COLORS } from "./theme";
+import { useSizes } from "./ResponsiveDesign";
 
 type DraggableButtonProps = {
     value: string;
@@ -27,6 +28,7 @@ export default function DraggableButton({ value, label, onTap, onDragStart, onDr
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const scale = useSharedValue(1);
+    const { cellSize } = useSizes()
 
     const dragGesture = Gesture.Pan()
         .onBegin(() => {
@@ -54,7 +56,6 @@ export default function DraggableButton({ value, label, onTap, onDragStart, onDr
             runOnJS(onTap)();
         });
 
-    // Combine tap + drag
     const combinedGesture = Gesture.Race(tapGesture, dragGesture);
 
     const style = useAnimatedStyle(() => ({
@@ -71,8 +72,8 @@ export default function DraggableButton({ value, label, onTap, onDragStart, onDr
 
     return (
         <GestureDetector gesture={combinedGesture}>
-            <Animated.View style={[styles.button, styleOverride, style]}>
-            <Text style={styles.text}>
+            <Animated.View style={[styles.button, styleOverride, style, { width: Math.floor(cellSize * 1.6), margin: Math.floor(cellSize / 10)}]}>
+            <Text style={[styles.text, { fontSize: Math.floor((cellSize * 1.6) / 3) }]}>
                     {label ?? value}
                 </Text>
             </Animated.View>
@@ -92,8 +93,7 @@ const styles = StyleSheet.create({
 
         justifyContent: "center",
         alignItems: "center",
-        marginHorizontal: 6,
-        marginVertical: 4,
+        paddingBottom: 3,
 
         shadowColor: "#000",
         shadowOpacity: 0.25,
@@ -102,13 +102,8 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
 
-    clearButton: {
-        backgroundColor: COLORS.borderColor,
-    },
-
     text: {
         color: COLORS.fontColor,
-        fontSize: 20,
         fontWeight: "700",
     },
 });

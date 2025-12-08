@@ -15,7 +15,7 @@ type CellProps = {
     ref: RefObject<TextInput>;       // TextInput ref passed from parent
     refs: RefObject<TextInput>[];
     updateValue:(index: number, e: any) => void;
-    setActiveCell: (index: number) => void;
+    setActiveCell: (index: number | null) => void;
     isActive?: boolean;
     isHovered?: boolean;
     onLayoutCell: (index: number, layout: { x:number, y:number, width:number, height:number }, isReadOnly: boolean) => void;
@@ -76,6 +76,7 @@ export default function Cell(props: CellProps) {
                 value={props.value}
                 ref={props.ref}
                 onFocus={() => props.setActiveCell(props.index)}
+                onBlur={() => props.setActiveCell(null)}
                 inputMode={"numeric"}
                 caretHidden={true}
                 cursorColor={"rgba(0,0,0,0)"}

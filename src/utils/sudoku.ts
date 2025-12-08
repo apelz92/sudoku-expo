@@ -66,6 +66,9 @@ function initMatrix(): number[][] {
  */
 export function checkGrid(grid: gridItem[]) {
     for (let cell of grid) {
+        if (!cell.hiddenValue) {
+            return false;
+        }
         if (cell.value !== cell.hiddenValue) {
             return false;
         }
