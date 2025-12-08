@@ -10,6 +10,13 @@ import InputButtons from "./InputButtons";
 
 /**
  * TODO - generated sudokus should only have unique solutions
+ *      * optional *
+ *      - add timer
+ *      - add hints
+ *      - add undo/redo
+ *      - add pencil marks
+ *      - add settings menu (theme, sound, etc.)
+ *
  */
 
 export default function Sudoku() {
@@ -81,7 +88,7 @@ export default function Sudoku() {
             if (!layout) return;
             const insideX = globalX >= layout.x && globalX <= layout.x + layout.width;
             const insideY = globalY >= layout.y && globalY <= layout.y + layout.height;
-            if (insideX && insideY) newHover = index;
+            if (insideX && insideY && !grid[index].isReadOnly) newHover = index;
         });
 
         if (newHover !== hoveredCell) setHoveredCell(newHover);
