@@ -21,10 +21,12 @@ export const COLORS = {
 
 //  Theme 3
     appBackground: "#14141b",
-    cellBackground: "#20272e",
+    cellPrimaryBackground: "#20272e",
+    cellSecondaryBackground: "#1f2229",
     cellHover: "#33354a",
     cellActive: "#42455e",
-    fontColor: "#c6c7d6",
+    primaryFontColor: "#c6c7d6",
+    secondaryFontColor: "#aab2ed",
     borderColor: "#42455e",
     innerBorderColor: "#33354a",
 

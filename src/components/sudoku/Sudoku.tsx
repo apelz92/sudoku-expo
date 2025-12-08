@@ -56,7 +56,7 @@ export default function Sudoku() {
         setActiveCell(null)
         storedGrids[difficulty].map((cell) => {
             cell.isReadOnly = false
-            if (cell.isVisible) cell.value = cell.hiddenValue
+            if (cell.isVisible) { cell.value = cell.hiddenValue; cell.isReadOnly = true }
             else if (!cell.isVisible) cell.value = ""
             return cell
         });
@@ -75,12 +75,6 @@ export default function Sudoku() {
     }
 
     function handleDragMove(globalX: number, globalY: number) {
-        // debug - show pointer and some layouts
-        // eslint-disable-next-line no-console
-        console.log("dragMove:", { x: globalX, y: globalY });
-        // show first 3 cell rects for quick inspection
-        // eslint-disable-next-line no-console
-        console.log("cellLayouts[0..3]:", cellLayouts.current.slice(0,4));
         let newHover: number | null = null;
 
         cellLayouts.current.forEach((layout, index) => {
@@ -94,10 +88,6 @@ export default function Sudoku() {
     }
 
     function handleDropRelease(globalX: number, globalY: number) {
-        // eslint-disable-next-line no-console
-        console.log("dropRelease at:", { x: globalX, y: globalY });
-        // eslint-disable-next-line no-console
-        console.log("cellRects:", cellLayouts.current.slice(0,6));
         if (dragValue === null) {
             setHoveredCell(null);
             return;
@@ -112,22 +102,14 @@ export default function Sudoku() {
             if (insideX && insideY) targetIndex = index;
         });
 
-        // eslint-disable-next-line no-console
-        console.log("detected targetIndex:", targetIndex);
-
-        if (targetIndex !== null) {
-            const target = cellLayouts.current[targetIndex];
-            if (!target?.isReadOnly) {
-                updateCell(targetIndex, dragValue);
-            } else {
-                // eslint-disable-next-line no-console
-                console.log("target was read-only, refusing drop");
-            }
+        if (targetIndex !== null && !grid[targetIndex].isReadOnly) {
+            updateCell(targetIndex, dragValue);
         }
 
         setDragValue(null);
         setHoveredCell(null);
     }
+
 
 
     function renderSudoku() {
@@ -188,10 +170,12 @@ export default function Sudoku() {
                 <InputButtons
                     activeCell={activeCell}
                     updateCell={updateCell}
+                    isReadOnly={(index) => grid[index].isReadOnly}
                     setDragValue={setDragValue}
                     handleDragMove={handleDragMove}
                     handleDropRelease={handleDropRelease}
                 />
+
 
                 <ConfettiFireworks trigger={won}></ConfettiFireworks>
             </View>
