@@ -21,7 +21,6 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
       "package": "com.amplidude.sudoku"
     },
     "web": {
@@ -32,6 +31,9 @@
         "projectId": "2d3901d9-cdae-4891-866c-14cb8db44ec0"
       }
     },
-    "owner": "amplidude"
+    "owner": "amplidude",
+    "experiments": {
+      "baseUrl": "/sudoku-expo"
+    }
   }
 }

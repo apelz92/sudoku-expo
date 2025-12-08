@@ -18,6 +18,8 @@ type CellProps = {
     setActiveCell: (index: number | null) => void;
     isActive?: boolean;
     isHovered?: boolean;
+    onHoverIn?: () => void;
+    onHoverOut?: () => void;
     onLayoutCell: (index: number, layout: { x:number, y:number, width:number, height:number }, isReadOnly: boolean) => void;
 }
 
@@ -25,6 +27,8 @@ export default function Cell({
                                  isActive,
                                  isHovered,
                                  isReadOnly,
+                                 onHoverIn,
+                                 onHoverOut,
                                  ...props
                              }: CellProps) {
     const { innerBorder, blockBorders, cellSize, cellFontSize } = useSizes();
@@ -59,6 +63,8 @@ export default function Cell({
             onLayout={() => {
                 setTimeout(() => measureAndReport(), 0);
             }}
+            onHoverIn={onHoverIn}
+            onHoverOut={onHoverOut}
             onPress={() => props.ref.current?.focus()}
             style={() => [
                 styles.cell,

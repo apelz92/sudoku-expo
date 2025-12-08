@@ -104,53 +104,58 @@ export default function Sudoku() {
 
         if (targetIndex !== null && !grid[targetIndex].isReadOnly) {
             updateCell(targetIndex, dragValue);
+            setActiveCell(targetIndex)
         }
 
         setDragValue(null);
         setHoveredCell(null);
     }
 
-
+    function handleCellHover(index: number | null) {
+        setHoveredCell(index);
+    }
 
     function renderSudoku() {
         return (
             <>
-                <View key="sudoku"
-                      style={[
-                          styles.sudoku,
-                          {
-                              width: sudokuWidth,
-                              height: sudokuHeight,
-                              borderWidth: outerBorder,
-                          }]}
+                <View
+                    key="sudoku"
+                    style={[
+                        styles.sudoku,
+                        {
+                            width: sudokuWidth,
+                            height: sudokuHeight,
+                            borderWidth: outerBorder,
+                        },
+                    ]}
                 >
                     {grid.map((cell: any) => (
-                            <Cell
-                                {...cell}
-                                key={"cell-" + cell.index}
-                                id={"cell-" + cell.index}
-                                ref={refs[cell.index]}
-                                refs={refs}
-                                updateValue={updateCell}
-                                setActiveCell={setActiveCell}
-                                isActive={activeCell === cell.index}
-                                isHovered={hoveredCell === cell.index}
-                                onLayoutCell={(index, layout, isReadOnly) => {
-                                    cellLayouts.current[index] = {
-                                        x: layout.x,
-                                        y: layout.y,
-                                        width: layout.width,
-                                        height: layout.height,
-                                        isReadOnly,
-                                    };
-                                }}
-                            />
-
-                        )
-                    )}
+                        <Cell
+                            {...cell}
+                            key={"cell-" + cell.index}
+                            id={"cell-" + cell.index}
+                            ref={refs[cell.index]}
+                            refs={refs}
+                            updateValue={updateCell}
+                            setActiveCell={setActiveCell}
+                            isActive={activeCell === cell.index && cell.isReadOnly === false}
+                            isHovered={hoveredCell === cell.index}
+                            onHoverIn={() => cell.isReadOnly ? handleCellHover(null) : handleCellHover(cell.index)}
+                            onHoverOut={() => handleCellHover(null)}
+                            onLayoutCell={(index, layout, isReadOnly) => {
+                                cellLayouts.current[index] = {
+                                    x: layout.x,
+                                    y: layout.y,
+                                    width: layout.width,
+                                    height: layout.height,
+                                    isReadOnly,
+                                };
+                            }}
+                        />
+                    ))}
                 </View>
             </>
-        )
+        );
     }
 
     return (
