@@ -1,8 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet } from 'react-native';
-import Sudoku from "./components/sudoku/Sudoku";
-import { COLORS } from "./components/sudoku/theme";
-import { ResponsiveDesign } from "./components/sudoku/ResponsiveDesign";
+import Sudoku from "./src/components/sudoku/Sudoku";
+import { COLORS } from "./src/components/sudoku/theme";
+import { ResponsiveDesign } from "./src/components/sudoku/ResponsiveDesign";
 
 export default function App() {
     return (
