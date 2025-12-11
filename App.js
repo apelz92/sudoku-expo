@@ -22,5 +22,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: COLORS.appBackground,
+        overflow: "visible",
     }
 })

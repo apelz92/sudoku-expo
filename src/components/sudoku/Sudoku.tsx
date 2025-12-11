@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
     base: {
         flexDirection: "column",
         justifyContent: "center",
+        overflow: "visible",
     },
     sudoku: {
         display: "flex",
@@ -208,5 +209,6 @@ const styles = StyleSheet.create({
         borderColor: COLORS.borderColor,
         backgroundColor: COLORS.borderColor,
         userSelect: "none",
+        overflow: "visible",
     },
 });

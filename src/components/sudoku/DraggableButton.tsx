@@ -1,5 +1,5 @@
-import React, {useEffect, useRef, useState} from "react";
-import { Text, StyleSheet, StyleProp, ViewStyle } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Text, View, StyleSheet, StyleProp, ViewStyle } from "react-native";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -37,7 +37,8 @@ export default function DraggableButton({
     const [isDraggingState, setIsDraggingState] = useState(false);
 
     const translateX = useSharedValue(0);
-    const translateY = useSharedValue(0);const widthVal = useSharedValue(Math.floor(cellSize * 1.6));
+    const translateY = useSharedValue(0);
+    const widthVal = useSharedValue(Math.floor(cellSize * 1.6));
     const heightVal = useSharedValue(cellSize);
 
     useEffect(() => {
@@ -53,7 +54,7 @@ export default function DraggableButton({
     const initialCenterY = useSharedValue(0);
     const measured = useSharedValue(0);
 
-    const viewRef = useRef<any>(null);
+    const viewRef = useRef<View>(null);
     const DRAG_THRESHOLD = 6;
 
     useAnimatedReaction(
@@ -69,7 +70,7 @@ export default function DraggableButton({
             return;
         }
         requestAnimationFrame(() => {
-            viewRef.current.measureInWindow((left: number, top: number, w: number, h: number) => {
+            viewRef.current?.measureInWindow((left: number, top: number, w: number, h: number) => {
                 initialCenterX.value = left + w / 2;
                 initialCenterY.value = top + h / 2;
                 measured.value = 1;
@@ -143,30 +144,67 @@ export default function DraggableButton({
                 { translateX: translateX.value },
                 { translateY: translateY.value },
             ],
-            opacity: 0.95,
+            opacity: isDragging.value ? 0.95 : 0,
             boxShadow: shadow,
             elevation: isDragging.value ? 8 : 2,
+            zIndex: isDragging.value ? 100 : 0,
         } as const;
     });
 
-
-    const displayText = isDraggingState && dragLabel ? dragLabel : (label ?? value);
+    const staticText = label ?? value;
+    const dragText = isDraggingState && dragLabel ? dragLabel : staticText;
+    const buttonWidth = Math.floor(cellSize * 1.6);
+    const buttonHeight = cellSize;
+    const buttonMargin = Math.floor(cellSize / 10);
 
     return (
         <GestureDetector gesture={combinedGesture}>
-            <Animated.View
-                ref={viewRef}
-                style={[styles.button, styleOverride, animatedStyle, { width: Math.floor(cellSize * 1.6), height: cellSize, margin: Math.floor(cellSize / 10) }]}
+            <View
+                style={[
+                    styles.buttonWrapper,
+                    { width: buttonWidth, height: buttonHeight, margin: buttonMargin },
+                ]}
             >
-                <Text style={[styles.text, { fontSize: Math.floor(cellSize * 1.6 / 3) }]}>
-                    {displayText}
-                </Text>
-            </Animated.View>
+                <View
+                    ref={viewRef}
+                    style={[
+                        styles.button,
+                        styleOverride,
+                        { width: buttonWidth, height: buttonHeight },
+                    ]}
+                >
+                    <Text style={[styles.text, { fontSize: Math.floor(buttonWidth / 3) }]}>
+                        {staticText}
+                    </Text>
+                </View>
+                <Animated.View
+                    pointerEvents="none"
+                    style={[
+                        styles.button,
+                        styles.dragOverlay,
+                        styleOverride,
+                        animatedStyle,
+                        {
+                            width: buttonWidth,
+                            height: buttonHeight,
+                        },
+                    ]}
+                >
+                    <Text style={[styles.text, { fontSize: Math.floor(buttonWidth / 3) }]}>
+                        {dragText}
+                    </Text>
+                </Animated.View>
+            </View>
         </GestureDetector>
     );
 }
 
 const styles = StyleSheet.create({
+    buttonWrapper: {
+        position: "relative",
+        alignItems: "center",
+        justifyContent: "center",
+    },
     button: {
         borderRadius: 6,
         backgroundColor: COLORS.cellPrimaryBackground,
@@ -177,6 +215,12 @@ const styles = StyleSheet.create({
         paddingBottom: 3,
         boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.25)",
         elevation: 3,
+    },
+    dragOverlay: {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: [{ translateX: -0.5 * Math.floor(useSizes().cellSize * 1.6) }, { translateY: -0.5 * useSizes().cellSize }],
     },
     text: {
         color: COLORS.primaryFontColor,
