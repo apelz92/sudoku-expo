@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         flexWrap: "wrap",
+        overflow: "visible",
     },
     clearButton: {
         backgroundColor: COLORS.borderColor,
