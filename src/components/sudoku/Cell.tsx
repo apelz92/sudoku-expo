@@ -99,6 +99,8 @@ export default function Cell({
                     if (!isReadOnly && /[1-9]/.test(key)) {
                         props.ref.current?.clear();
                         props.updateValue(props.index, key);
+                    } else if (!isReadOnly && (key === "Delete" || key === "Backspace")) {
+                        props.updateValue(props.index, "");
                     }
                 }}
                 style={[
