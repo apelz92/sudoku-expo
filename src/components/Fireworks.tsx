@@ -11,7 +11,7 @@ export function ConfettiFireworks(props: FireworksProps) {
         if (props.trigger) {
             animate()
         }
-    })
+    }, [props.trigger])
     const animate = () => {
         const duration = 5 * 1000
         const animationEnd = Date.now() + duration
