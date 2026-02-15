@@ -29,6 +29,9 @@ export async function buildSudoku(difficulty: number): Promise<gridItem[]> {
     let solved: boolean = false;
     while (!solved) {
         let numbers = fillGrid();
+        if (!isValidBoard(numbers)) {
+            continue;
+        }
         let newGrid = initGrid().map((cell) => {
             const {row, column} = indexToRowColumn(cell.index)
             cell.hiddenValue = String(numbers[row][column])
@@ -147,42 +150,53 @@ function makeNumbersVisible(grid: gridItem[], difficulty: number): gridItem[] {
  * @returns
  */
 export function fillGrid(): number[][] {
-    let numbers = initMatrix();
-    while(hasNull(numbers)) {
-        initMatrix();
-        let fail: number = 0;
-        for (let row: number = 0; row < 9; row++) {
-            for (let column: number = 0; column < 9; column++) {
-                let hasDuplicate: boolean = false;
-                let alreadyTried: boolean[] = [];
-                randomFill: do {
-                    if (fail > 40) {
-                        return numbers;
-                    }
-                    let randomNumber: number = Math.floor(Math.random() * 9 + 1);
-                    while (alreadyTried[randomNumber - 1]) {
-                        randomNumber = Math.floor(Math.random() * 9 + 1);
-                        if (alreadyTried.filter(() => true).length === 9) {
-                            for (let clearColumn: number = 0; clearColumn < column + 1; clearColumn++) {
-                                numbers[row][clearColumn] = 0;
-                            }
-                            column = 0;
-                            fail++;
-                            alreadyTried = [];
-                            continue randomFill;
-                        }
-                    }
-                    hasDuplicate = searchSudoku(row, column, randomNumber, numbers);
-                    if (hasDuplicate) {
-                        alreadyTried[randomNumber - 1] = true;
-                    } else {
-                        numbers[row][column] = randomNumber;
-                    }
-                } while (hasDuplicate);
-            }
+    const pattern = (r: number, c: number) => ((r * 3 + Math.floor(r / 3) + c) % 9) + 1;
+    const base: number[][] = [];
+    for (let r = 0; r < 9; r++) {
+        base[r] = [];
+        for (let c = 0; c < 9; c++) {
+            base[r][c] = pattern(r, c);
         }
     }
-    return numbers;
+    const shuffle = (arr: any[]) => {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+    };
+    const rows = Array.from({ length: 9 }, (_, i) => i);
+    for (let band = 0; band < 3; band++) {
+        const bandRows = rows.slice(band * 3, band * 3 + 3);
+        shuffle(bandRows);
+        for (let i = 0; i < 3; i++) {
+            rows[band * 3 + i] = bandRows[i];
+        }
+    }
+    const cols = Array.from({ length: 9 }, (_, i) => i);
+    for (let stack = 0; stack < 3; stack++) {
+        const stackCols = cols.slice(stack * 3, stack * 3 + 3);
+        shuffle(stackCols);
+        for (let i = 0; i < 3; i++) {
+            cols[stack * 3 + i] = stackCols[i];
+        }
+    }
+    const board: number[][] = [];
+    for (let r = 0; r < 9; r++) {
+        board[r] = [];
+        for (let c = 0; c < 9; c++) {
+            board[r][c] = base[rows[r]][cols[c]];
+        }
+    }
+    const digits = [1,2,3,4,5,6,7,8,9];
+    shuffle(digits);
+    const map: {[key:number]: number} = {};
+    for (let i = 0; i < 9; i++) map[i + 1] = digits[i];
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+            board[r][c] = map[board[r][c]];
+        }
+    }
+    return board;
 }
 
 /**
@@ -194,13 +208,55 @@ export function fillGrid(): number[][] {
  * @returns {boolean} true - if duplicate has been found
  */
 function searchSudoku(row: number, column: number, number: number, numbers: number[][]): boolean {
-    let hasDuplicate;
-    hasDuplicate = searchRow(row, column, number, numbers);
-    if(hasDuplicate) { return hasDuplicate; }
+    // Check for duplicates in row, column, then 3x3 block, logging the source of any duplicate
+    let hasDuplicate = searchRow(row, column, number, numbers);
+    if (hasDuplicate) {
+        console.log(`Duplicate ${number} found in row ${row}`);
+        return true;
+    }
     hasDuplicate = searchColumn(row, column, number, numbers);
-    if(hasDuplicate) { return hasDuplicate; }
+    if (hasDuplicate) {
+        console.log(`Duplicate ${number} found in column ${column}`);
+        return true;
+    }
     hasDuplicate = searchBlock(row, column, number, numbers);
-    return hasDuplicate;
+    if (hasDuplicate) {
+        console.log(`Duplicate ${number} found in block for cell (${row},${column})`);
+        return true;
+    }
+    return false;
+}
+
+export function isValidBoard(numbers: number[][]): boolean {
+    for (let r = 0; r < 9; r++) {
+        const seen = new Set<number>();
+        for (let c = 0; c < 9; c++) {
+            const val = numbers[r][c];
+            if (val < 1 || val > 9 || seen.has(val)) return false;
+            seen.add(val);
+        }
+    }
+    for (let c = 0; c < 9; c++) {
+        const seen = new Set<number>();
+        for (let r = 0; r < 9; r++) {
+            const val = numbers[r][c];
+            if (val < 1 || val > 9 || seen.has(val)) return false;
+            seen.add(val);
+        }
+    }
+    for (let br = 0; br < 3; br++) {
+        for (let bc = 0; bc < 3; bc++) {
+            const seen = new Set<number>();
+            for (let r = br * 3; r < br * 3 + 3; r++) {
+                for (let c = bc * 3; c < bc * 3 + 3; c++) {
+                    const val = numbers[r][c];
+                    if (val < 1 || val > 9 || seen.has(val)) return false;
+                    seen.add(val);
+                }
+            }
+        }
+    }
+    return true;
 }
 
 /**
@@ -257,16 +313,20 @@ function searchColumn(row: number, searchedColumn: number, value: number, number
  * @returns {boolean}
  */
 function searchBlock(searchedRow: number, searchedColumn: number, value: number, numbers: number[][]): boolean {
-    searchedRow = searchedRow - (searchedRow % 3);
-    searchedColumn = searchedColumn - (searchedColumn % 3);
-    for (let row = searchedRow; row < searchedRow + 3; row++) {
-        for (let column = searchedColumn; column < searchedColumn + 3; column++) {
-            if (row === searchedRow && column === searchedColumn) { continue; }
-            if (value === numbers[row][column]) {
-                return true;
-            }
-        }
-    } return false;
+  const origRow = searchedRow;
+  const origCol = searchedColumn;
+  const startRow = origRow - (origRow % 3);
+  const startCol = origCol - (origCol % 3);
+  for (let row = startRow; row < startRow + 3; row++) {
+    for (let col = startCol; col < startCol + 3; col++) {
+      if (row === origRow && col === origCol) { continue; }
+      if (value === numbers[row][col]) {
+        console.log(`Duplicate ${value} found in block at (${row},${col})`);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**
