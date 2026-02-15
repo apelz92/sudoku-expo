@@ -1,16 +1,30 @@
-import React, {useEffect, useState} from "react";
+import React, { useState } from "react";
 import { Text, StyleProp, ViewStyle } from "react-native";
 import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    useAnimatedReaction,
-    withTiming,
-    withSpring,
+  useAnimatedStyle,
+  useSharedValue,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import styled from 'styled-components/native';
 import { COLORS } from "./theme";
 import { useSizes } from "./ResponsiveDesign";
+
+const ButtonContainer = styled.View`
+  position: relative;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StyledBaseView = styled.View`
+  border-radius: 6px;
+  background-color: ${COLORS.cellPrimaryBackground};
+  border-width: 1px;
+  border-color: ${COLORS.innerBorderColor};
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 3px;
+`;
 
 const StyledAnimatedView = styled(Animated.View)`
   border-radius: 6px;
@@ -20,6 +34,9 @@ const StyledAnimatedView = styled(Animated.View)`
   justify-content: center;
   align-items: center;
   padding-bottom: 3px;
+  position: absolute;
+  left: 0;
+  top: 0;
 `;
 
 const StyledText = styled(Text)`
@@ -50,134 +67,105 @@ export default function DraggableButton({
 }: DraggableButtonProps) {
   const { cellSize } = useSizes();
   const [isDraggingState, setIsDraggingState] = useState(false);
+  const defaultLabel = label ?? value;
+  const dragDisplayLabel = dragLabel ?? defaultLabel;
 
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  const widthVal = useSharedValue(Math.floor(cellSize * 1.6));
-  const heightVal = useSharedValue(cellSize);
-
   const isDragging = useSharedValue(false);
 
-  const initialCenterX = useSharedValue(0);
-  const initialCenterY = useSharedValue(0);
-  const measured = useSharedValue(0);
-
-  // Ref removed to avoid React 19 "element.ref" warning
   const DRAG_THRESHOLD = 6;
-
-  useEffect(() => {
-    if (!isDragging.value) {
-      widthVal.value = Math.floor(cellSize * 1.6);
-      heightVal.value = cellSize;
-    }
-  }, [cellSize]);
-
-  useAnimatedReaction(
-    () => isDragging.value,
-    (dragging) => {
-      void setIsDraggingState(dragging);
-    }
-  );
-
-  // Compute initial center from provided layout
-  const measureInitialCenter = (layout: {x:number, y:number, width:number, height:number}) => {
-    initialCenterX.value = layout.x + layout.width / 2;
-    initialCenterY.value = layout.y + layout.height / 2;
-    measured.value = 1;
+  const setDraggingState = (dragging: boolean) => {
+    setIsDraggingState(dragging);
   };
 
   const dragGesture = Gesture.Pan()
-    .onUpdate((e) => {
-      const movedX = Math.abs(e.translationX);
-      const movedY = Math.abs(e.translationY);
+    .onUpdate((event) => {
+      const movedX = Math.abs(event.translationX);
+      const movedY = Math.abs(event.translationY);
 
-      if (!isDragging.value) {
-        if (movedX > DRAG_THRESHOLD || movedY > DRAG_THRESHOLD) {
-          if (measured.value === 0) {
-            // Layout not yet measured; wait for onLayout to set initial center.
-            return;
-          }
-          if (measured.value === 1) {
-            isDragging.value = true;
-            widthVal.value = withTiming(cellSize, { duration: 120 });
-            heightVal.value = withTiming(cellSize, { duration: 120 });
-            void onDragStart();
-          }
-        }
+      if (!isDragging.value && (movedX > DRAG_THRESHOLD || movedY > DRAG_THRESHOLD)) {
+        isDragging.value = true;
+        scheduleOnRN(setDraggingState, true);
+        scheduleOnRN(onDragStart);
       }
 
       if (isDragging.value) {
-        translateX.value = e.absoluteX - initialCenterX.value;
-        translateY.value = e.absoluteY - initialCenterY.value;
-        void onDragMove(e.absoluteX, e.absoluteY);
-      } else {
-        translateX.value = e.translationX;
-        translateY.value = e.translationY;
+        translateX.value = event.translationX;
+        translateY.value = event.translationY;
+        scheduleOnRN(onDragMove, event.absoluteX, event.absoluteY);
       }
     })
-    .onEnd((e) => {
+    .onEnd((event) => {
       if (isDragging.value) {
-        void onDragEnd(e.absoluteX, e.absoluteY);
-        widthVal.value = withTiming(Math.floor(cellSize * 1.6), { duration: 150 });
-        heightVal.value = withTiming(cellSize, { duration: 150 });
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
-        isDragging.value = false;
+        scheduleOnRN(onDragEnd, event.absoluteX, event.absoluteY);
       } else {
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
+        scheduleOnRN(onTap);
       }
-      measured.value = 0;
-      initialCenterX.value = 0;
-      initialCenterY.value = 0;
+
+      translateX.value = 0;
+      translateY.value = 0;
+      isDragging.value = false;
+      scheduleOnRN(setDraggingState, false);
     });
 
-  const tapGesture = Gesture.Tap().onEnd(() => {
-    void onTap();
-  });
-
-  const combinedGesture = Gesture.Race(tapGesture, dragGesture);
-
   const animatedStyle = useAnimatedStyle(() => {
-    const currentWidth = widthVal.value;
     return {
-      width: currentWidth,
-      height: heightVal.value,
-      borderRadius: Math.floor(currentWidth * 0.12),
       transform: [
         { translateX: translateX.value },
         { translateY: translateY.value },
       ],
       opacity: 0.95,
-      elevation: isDragging.value ? 8 : 2,
+      zIndex: 10,
+      elevation: 10,
     };
   });
-
-  const displayText = isDraggingState && dragLabel ? dragLabel : (label ?? value);
+  const buttonWidth = Math.floor(cellSize * 1.6);
+  const buttonHeight = cellSize;
+  const buttonMargin = Math.floor(cellSize / 10);
+  const textSize = Math.floor(buttonWidth / 3);
+  const dragSquareSize = cellSize;
+  const dragLeftOffset = Math.floor((buttonWidth - dragSquareSize) / 2);
 
   return (
-    <GestureDetector gesture={combinedGesture}>
-      <StyledAnimatedView
-        onLayout={(event) => {
-          const layout = event.nativeEvent.layout;
-          if (measured.value === 0) {
-            measureInitialCenter(layout);
-          }
+    <GestureDetector gesture={dragGesture}>
+      <ButtonContainer
+        style={{
+          width: buttonWidth,
+          height: buttonHeight,
+          margin: buttonMargin,
         }}
-        style={[
-          styleOverride,
-          animatedStyle,
-          { 
-            width: Math.floor(cellSize * 1.6), 
-            height: cellSize, 
-            margin: Math.floor(cellSize / 10) 
-          }
-        ]}
       >
-        <StyledText style={{ fontSize: Math.floor(cellSize * 1.6 / 3) }}>
-          {displayText}
-        </StyledText>
-      </StyledAnimatedView>
+        <StyledBaseView
+          style={[
+            styleOverride,
+            {
+              width: buttonWidth,
+              height: buttonHeight,
+              opacity: isDraggingState ? 0.3 : 0.95,
+            },
+          ]}
+        >
+          <StyledText style={{ fontSize: textSize }}>{defaultLabel}</StyledText>
+        </StyledBaseView>
+
+        {isDraggingState ? (
+          <StyledAnimatedView
+            pointerEvents="none"
+            style={[
+              styleOverride,
+              animatedStyle,
+              {
+                width: dragSquareSize,
+                height: dragSquareSize,
+                left: dragLeftOffset,
+              },
+            ]}
+          >
+            <StyledText style={{ fontSize: textSize }}>{dragDisplayLabel}</StyledText>
+          </StyledAnimatedView>
+        ) : null}
+      </ButtonContainer>
     </GestureDetector>
   );
 }
