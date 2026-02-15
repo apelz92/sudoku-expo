@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import { Text, StyleProp, ViewStyle } from "react-native";
 import Animated, {
     useSharedValue,
@@ -62,7 +62,7 @@ export default function DraggableButton({
   const initialCenterY = useSharedValue(0);
   const measured = useSharedValue(0);
 
-  const viewRef = useRef<any>(null);
+  // Ref removed to avoid React 19 "element.ref" warning
   const DRAG_THRESHOLD = 6;
 
   useEffect(() => {
@@ -75,42 +75,33 @@ export default function DraggableButton({
   useAnimatedReaction(
     () => isDragging.value,
     (dragging) => {
-      "worklet";
-      setIsDraggingState(dragging);
+      void setIsDraggingState(dragging);
     }
   );
 
-  const measureInitialCenter = () => {
-    if (!viewRef.current || typeof viewRef.current.measureInWindow !== "function") {
-      measured.value = 1;
-      return;
-    }
-    requestAnimationFrame(() => {
-      viewRef.current.measureInWindow((left: number, top: number, w: number, h: number) => {
-        initialCenterX.value = left + w / 2;
-        initialCenterY.value = top + h / 2;
-        measured.value = 1;
-      });
-    });
+  // Compute initial center from provided layout
+  const measureInitialCenter = (layout: {x:number, y:number, width:number, height:number}) => {
+    initialCenterX.value = layout.x + layout.width / 2;
+    initialCenterY.value = layout.y + layout.height / 2;
+    measured.value = 1;
   };
 
   const dragGesture = Gesture.Pan()
     .onUpdate((e) => {
-      "worklet";
       const movedX = Math.abs(e.translationX);
       const movedY = Math.abs(e.translationY);
 
       if (!isDragging.value) {
         if (movedX > DRAG_THRESHOLD || movedY > DRAG_THRESHOLD) {
           if (measured.value === 0) {
-            measureInitialCenter();
+            // Layout not yet measured; wait for onLayout to set initial center.
             return;
           }
           if (measured.value === 1) {
             isDragging.value = true;
             widthVal.value = withTiming(cellSize, { duration: 120 });
             heightVal.value = withTiming(cellSize, { duration: 120 });
-            onDragStart();
+            void onDragStart();
           }
         }
       }
@@ -118,16 +109,15 @@ export default function DraggableButton({
       if (isDragging.value) {
         translateX.value = e.absoluteX - initialCenterX.value;
         translateY.value = e.absoluteY - initialCenterY.value;
-        onDragMove(e.absoluteX, e.absoluteY);
+        void onDragMove(e.absoluteX, e.absoluteY);
       } else {
         translateX.value = e.translationX;
         translateY.value = e.translationY;
       }
     })
     .onEnd((e) => {
-      "worklet";
       if (isDragging.value) {
-        onDragEnd(e.absoluteX, e.absoluteY);
+        void onDragEnd(e.absoluteX, e.absoluteY);
         widthVal.value = withTiming(Math.floor(cellSize * 1.6), { duration: 150 });
         heightVal.value = withTiming(cellSize, { duration: 150 });
         translateX.value = withSpring(0);
@@ -143,8 +133,7 @@ export default function DraggableButton({
     });
 
   const tapGesture = Gesture.Tap().onEnd(() => {
-    "worklet";
-    onTap();
+    void onTap();
   });
 
   const combinedGesture = Gesture.Race(tapGesture, dragGesture);
@@ -169,7 +158,12 @@ export default function DraggableButton({
   return (
     <GestureDetector gesture={combinedGesture}>
       <StyledAnimatedView
-        ref={viewRef}
+        onLayout={(event) => {
+          const layout = event.nativeEvent.layout;
+          if (measured.value === 0) {
+            measureInitialCenter(layout);
+          }
+        }}
         style={[
           styleOverride,
           animatedStyle,

@@ -14,7 +14,7 @@ type CellProps = {
   isReadOnly: boolean;
   hasVerticalBorder: boolean;
   hasHorizontalBorder: boolean;
-  inputRef: RefObject<TextInput>; // renamed from ref
+  inputRef: RefObject<TextInput>;
   refs: RefObject<TextInput>[];
   updateValue: (index: number, e: any) => void;
   setActiveCell: (index: number | null) => void;
