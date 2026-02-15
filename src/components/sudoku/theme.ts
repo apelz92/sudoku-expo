@@ -40,6 +40,11 @@ export const COLORS = {
     innerBorderColor: "#3f334a",*/
 };
 
+export const defaultTheme = {
+    colors: COLORS,
+    sizes: calculateSizes,
+};
+
 export function calculateSizes() {
     const { height, width } = Dimensions.get("window")
     const outerBorder = 2

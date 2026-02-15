@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "sudoku",
   "version": "1.0.0",
   "homepage": "https://apelz92.github.io/sudoku-expo",
@@ -23,12 +24,15 @@
     "react-native-gesture-handler": "~2.29.1",
     "react-native-reanimated": "~4.2.0",
     "react-native-web": "~0.21.2",
-    "react-native-worklets": "0.7.1"
+    "react-native-worklets": "0.7.1",
+    "styled-components": "^6.3.9"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^25.2.3",
     "@types/react": "~19.2.7",
     "gh-pages": "^6.3.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.9.3"
   },
   "private": true
