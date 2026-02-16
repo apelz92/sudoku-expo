@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "homepage": "https://apelz92.github.io/sudoku-expo",
   "main": "src/index.ts",
+  "build": {
+    "appId": "de.apelz92.sudoku"
+  },
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -31,6 +34,8 @@
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^25.2.3",
     "@types/react": "~19.2.7",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0",
     "gh-pages": "^6.3.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3"
