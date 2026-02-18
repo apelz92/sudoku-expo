@@ -4,10 +4,13 @@ import styled from 'styled-components/native';
 import { COLORS } from "./theme";
 import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
-import { buildSudoku, checkGrid, createStore, gridItem, initGrid, storedGrids } from "../../utils/sudoku";
+import { buildSudoku, checkGrid, CellObject, initGrid } from "../../utils/sudoku";
 import { useSizes } from "./ResponsiveDesign";
 import { ConfettiFireworks } from "../Fireworks";
 import InputButtons from "./InputButtons";
+
+let SUDOKU_UI_VERBOSE = false;
+export function setSudokuUIVerbose(v: boolean) { SUDOKU_UI_VERBOSE = v; }
 
 type StyledBaseViewProps = {
   $height: number;
@@ -42,7 +45,6 @@ const StyledSudokuView = styled.View<StyledSudokuViewProps>`
 /**
  * TODO *functional*
  *      - generated sudokus should only have unique solutions
- *          * optional *
  *      - add timer
  *      - add hints
  *      - add undo/redo
@@ -50,8 +52,11 @@ const StyledSudokuView = styled.View<StyledSudokuViewProps>`
  *      - add settings menu (theme, sound, etc.)
  */
 
+const DIFFICULTY_LEVELS = [0, 1, 2, 3, 4];
+
 export default function Sudoku() {
-  const [grid, setGrid] = useState<gridItem[]>(initGrid());
+  const [grid, setGrid] = useState<CellObject[]>(initGrid());
+  const [storedGrids, setStoredGrids] = useState<CellObject[][]>([]);
   const [activeDifficulty, setActiveDifficulty] = useState<number | null>(null);
   const [activeCell, setActiveCell] = useState<number | null>(null);
   const [dragValue, setDragValue] = useState<string | null>(null);
@@ -61,12 +66,30 @@ export default function Sudoku() {
   const refs: React.RefObject<TextInput>[] = Array.from({ length: 81 }, () => useRef<TextInput>(null)) as React.RefObject<TextInput>[];
   const { outerBorder, sudokuHeight, sudokuWidth, viewHeight } = useSizes();
   const cellLayouts = useRef<
-    { x: number; y: number; width: number; height: number; isReadOnly: boolean }[]
-  >([]);
+      { x: number; y: number; width: number; height: number; isReadOnly: boolean }[]
+    >([]);
+
+  useEffect(() => {
+    if (storedGrids.length === 0) {
+      let cancelled = false;
+      const puzzles: CellObject[][] = [];
+      const generateNext = (index: number) => {
+        if (cancelled || index >= DIFFICULTY_LEVELS.length) {
+          if (!cancelled && puzzles.length === DIFFICULTY_LEVELS.length) {
+            setStoredGrids(puzzles);
+          }
+          return;
+        }
+        puzzles.push(buildSudoku(DIFFICULTY_LEVELS[index]).grid);
+        setTimeout(() => generateNext(index + 1), 0);
+      };
+      generateNext(0);
+      return () => { cancelled = true; };
+    }
+  }, [storedGrids.length]);
 
   useEffect(() => {
     if (!loaded) {
-      createStore().then(() => {});
       componentLoaded(true);
     }
   }, [loaded]);
@@ -89,26 +112,48 @@ export default function Sudoku() {
   }, [grid]);
 
   async function difficultyButtonClick(difficulty: number) {
+    if (__DEV__ && SUDOKU_UI_VERBOSE) {
+      console.log("[Sudoku] difficultyButtonClick", {
+        difficulty,
+        storedGridsLength: storedGrids.length,
+        hasGridAtDifficulty: !!storedGrids[difficulty],
+        firstCell: storedGrids[difficulty]?.[0],
+      });
+    }
     hasWon(false);
     setActiveCell(null);
-    const newGrid = storedGrids[difficulty].map((cell: gridItem) => {
-      cell.isReadOnly = false;
-      if (cell.isVisible) {
-        cell.value = cell.hiddenValue!;
-        cell.isReadOnly = true;
-      } else {
-        cell.value = "";
-      }
-      return cell;
-    });
+    const newGrid = storedGrids[difficulty]
+      .map((cell: CellObject) => ({ ...cell }))
+      .map((cell: CellObject) => {
+        cell.isReadOnly = false;
+        if (cell.isVisible) {
+          cell.value = cell.hiddenValue!;
+          cell.isReadOnly = true;
+        } else {
+          cell.value = "";
+        }
+        return cell;
+      });
     setGrid(newGrid);
-    storedGrids[difficulty] = await buildSudoku(difficulty);
+    // Regenerate replacement puzzle in background
+    setTimeout(() => {
+      const updated = [...storedGrids];
+      updated[difficulty] = buildSudoku(difficulty).grid;
+      setStoredGrids(updated);
+    }, 0);
   }
 
   function updateCell(index: number, newValue: string) {
+    if (__DEV__ && SUDOKU_UI_VERBOSE) {
+      console.log("[Sudoku] updateCell", {
+        index,
+        newValue,
+        prev: grid[index],
+      });
+    }
     const updatedGrid = grid.map((cell) => {
       if (index === cell.index) {
-        return { ...cell, value: newValue, isVisible: true };
+        return { ...cell, value: newValue, isReadOnly: true };
       }
       return cell;
     });
@@ -158,57 +203,57 @@ export default function Sudoku() {
 
   function renderSudoku() {
     return (
-      <StyledSudokuView
-        key="sudoku"
-        $width={sudokuWidth}
-        $height={sudokuHeight}
-        $borderWidth={outerBorder}
-      >
-        {grid.map((cell) => (
-          <Cell
-            {...cell}
-            key={"cell-" + cell.index}
-            id={"cell-" + cell.index}
-            inputRef={refs[cell.index]}
-            refs={refs}
-            updateValue={updateCell}
-            setActiveCell={setActiveCell}
-            isActive={activeCell === cell.index && !cell.isReadOnly}
-            isHovered={hoveredCell === cell.index}
-            onHoverIn={() => (cell.isReadOnly ? handleCellHover(null) : handleCellHover(cell.index))}
-            onHoverOut={() => handleCellHover(null)}
-            onLayoutCell={(index, layout, isReadOnly) => {
-              cellLayouts.current[index] = {
-                x: layout.x,
-                y: layout.y,
-                width: layout.width,
-                height: layout.height,
-                isReadOnly,
-              };
-            }}
-          />
-        ))}
-      </StyledSudokuView>
+        <StyledSudokuView
+            key="sudoku"
+            $width={sudokuWidth}
+            $height={sudokuHeight}
+            $borderWidth={outerBorder}
+        >
+          {grid.map((cell) => (
+              <Cell
+                  {...cell}
+                  key={"cell-" + cell.index}
+                  id={"cell-" + cell.index}
+                  inputRef={refs[cell.index]}
+                  refs={refs}
+                  updateValue={updateCell}
+                  setActiveCell={setActiveCell}
+                  isActive={activeCell === cell.index && !cell.isReadOnly}
+                  isHovered={hoveredCell === cell.index}
+                  onHoverIn={() => (cell.isReadOnly ? handleCellHover(null) : handleCellHover(cell.index))}
+                  onHoverOut={() => handleCellHover(null)}
+                  onLayoutCell={(index, layout, isReadOnly) => {
+                    cellLayouts.current[index] = {
+                      x: layout.x,
+                      y: layout.y,
+                      width: layout.width,
+                      height: layout.height,
+                      isReadOnly,
+                    };
+                  }}
+              />
+          ))}
+        </StyledSudokuView>
     );
   }
 
   return (
-    <StyledBaseView $height={viewHeight} $width={sudokuWidth}>
-      <DifficultyBar
-        onClick={difficultyButtonClick}
-        setActiveDifficulty={setActiveDifficulty}
-        activeDifficulty={activeDifficulty}
-      />
-      {renderSudoku()}
-      <InputButtons
-        activeCell={activeCell}
-        updateCell={updateCell}
-        isReadOnly={(index) => grid[index].isReadOnly}
-        setDragValue={setDragValue}
-        handleDragMove={handleDragMove}
-        handleDropRelease={handleDropRelease}
-      />
-      <ConfettiFireworks trigger={won} />
-    </StyledBaseView>
+      <StyledBaseView $height={viewHeight} $width={sudokuWidth}>
+          <DifficultyBar
+              onClick={difficultyButtonClick}
+              setActiveDifficulty={setActiveDifficulty}
+              activeDifficulty={activeDifficulty}
+          />
+          {renderSudoku()}
+          <InputButtons
+              activeCell={activeCell}
+              updateCell={updateCell}
+              isReadOnly={(index) => grid[index].isReadOnly}
+              setDragValue={setDragValue}
+              handleDragMove={handleDragMove}
+              handleDropRelease={handleDropRelease}
+          />
+          <ConfettiFireworks trigger={won} />
+      </StyledBaseView>
   );
 }
