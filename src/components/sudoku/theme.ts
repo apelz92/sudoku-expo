@@ -38,6 +38,15 @@ export const COLORS = {
     fontColor: "#bfb2ca",
     borderColor: "#51425e",
     innerBorderColor: "#3f334a",*/
+
+    //  Theme 4
+    /*  canvagent colours
+    * primary: "#FFAAAA",
+    * primary: "#D46A6A",
+    * primary: "#AA3939",
+    * primary: "#801515",
+    * primary: "#550000",
+    * */
 };
 
 export const defaultTheme = {
