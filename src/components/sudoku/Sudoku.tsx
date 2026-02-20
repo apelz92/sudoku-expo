@@ -1,10 +1,10 @@
 import { TextInput } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import styled from 'styled-components/native';
 import { COLORS } from "./theme";
 import Cell from "./Cell";
 import DifficultyBar from "./DifficultyBar";
-import { buildSudoku, checkGrid, CellObject, initGrid } from "../../utils/sudoku";
+import { buildSudoku, CellObject, initGrid, cellsToBoard, isValidBoard, solve } from "../../utils/sudoku";
 import { useSizes } from "./ResponsiveDesign";
 import { ConfettiFireworks } from "../Fireworks";
 import InputButtons from "./InputButtons";
@@ -44,12 +44,11 @@ const StyledSudokuView = styled.View<StyledSudokuViewProps>`
 
 /**
  * TODO *functional*
- *      - generated sudokus should only have unique solutions
- *      - add timer
- *      - add hints
- *      - add undo/redo
- *      - add pencil marks
- *      - add settings menu (theme, sound, etc.)
+ *      - make difficulty selection responsive to assessment metadata (dynamic target clues)
+ *      - add timer + progress tracking with difficulty history
+ *      - flesh out hints/pencil marks while keeping solve() available as helper
+ *      - add undo/redo stack for user inputs
+ *      - expose settings menu (theme, sound, solver hints, etc.)
  */
 
 const DIFFICULTY_LEVELS = [0, 1, 2, 3, 4];
@@ -107,7 +106,7 @@ export default function Sudoku() {
 
   useEffect(() => {
     if (loaded) {
-      hasWon(checkGrid(grid));
+      hasWon(isValidBoard(cellsToBoard(grid)));
     }
   }, [grid]);
 
@@ -125,13 +124,8 @@ export default function Sudoku() {
     const newGrid = storedGrids[difficulty]
       .map((cell: CellObject) => ({ ...cell }))
       .map((cell: CellObject) => {
-        cell.isReadOnly = false;
-        if (cell.isVisible) {
-          cell.value = cell.hiddenValue!;
-          cell.isReadOnly = true;
-        } else {
-          cell.value = "";
-        }
+        cell.isReadOnly = cell.isVisible;
+        cell.value = cell.isVisible ? cell.hiddenValue! : "";
         return cell;
       });
     setGrid(newGrid);
@@ -153,7 +147,7 @@ export default function Sudoku() {
     }
     const updatedGrid = grid.map((cell) => {
       if (index === cell.index) {
-        return { ...cell, value: newValue, isReadOnly: true };
+        return { ...cell, value: newValue };
       }
       return cell;
     });
@@ -200,6 +194,12 @@ export default function Sudoku() {
   function handleCellHover(index: number | null) {
     setHoveredCell(index);
   }
+
+  const handleAutoSolve = useCallback(() => {
+    const solvedGrid = solve(grid);
+    setGrid(solvedGrid);
+    setActiveCell(null);
+  }, [grid]);
 
   function renderSudoku() {
     return (
@@ -252,6 +252,7 @@ export default function Sudoku() {
               setDragValue={setDragValue}
               handleDragMove={handleDragMove}
               handleDropRelease={handleDropRelease}
+              onSolve={handleAutoSolve}
           />
           <ConfettiFireworks trigger={won} />
       </StyledBaseView>
