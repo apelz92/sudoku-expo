@@ -7,6 +7,20 @@ const NAKED_SINGLE_WEIGHT = 0.5;
 const CLUES_WEIGHT = 1.5;
 const DIFFICULTY_THRESHOLDS = [10, 40, 100, 300]; // for levels 1-4
 
+// Clue count constants for puzzle generation
+export const EASY_MAX_CLUES = 60;
+export const HARD_MIN_CLUES = 20;
+export const CLUES_STEP = (EASY_MAX_CLUES - HARD_MIN_CLUES) / 4;
+export const MAX_CLUES_BY_DIFFICULTY = [60, 55, 50, 35, 25];
+
+export const CLUE_RANGES_BY_DIFFICULTY = [
+  { min: 55, max: 65 },
+  { min: 45, max: 55 },
+  { min: 35, max: 45 },
+  { min: 25, max: 35 },
+  { min: 17, max: 25 },
+] as const;
+
 // Precomputed bit-to-number table: bitToNum[1<<k] = k+1 for k=0..8
 const bitToNum = new Uint8Array(512);
 for (let k = 0; k < 9; k++) bitToNum[1 << k] = k + 1;
@@ -25,7 +39,7 @@ for (let k = 0; k < 9; k++) bitToNum[1 << k] = k + 1;
  * const {rowMask} = initConstraints(board);
  * // rowMask[0] has bits for used digits in row 0
  */
-function initConstraints(board: number[][]): { rowMask: number[], colMask: number[], boxMask: number[] } {
+export function initConstraints(board: number[][]): { rowMask: number[], colMask: number[], boxMask: number[] } {
     const rowMask = new Array(9).fill(0);
     const colMask = new Array(9).fill(0);
     const boxMask = new Array(9).fill(0);
@@ -59,7 +73,7 @@ function initConstraints(board: number[][]): { rowMask: number[], colMask: numbe
  * const cands = getCandidates(0, 0, rowMask, colMask, boxMask);
  * bitCount(cands); // e.g. 5 possible digits
  */
-function getCandidates(r: number, c: number, rowMask: number[], colMask: number[], boxMask: number[]): number {
+export function getCandidates(r: number, c: number, rowMask: number[], colMask: number[], boxMask: number[]): number {
     const boxIdx = Math.floor(r / 3) * 3 + Math.floor(c / 3);
     return (~(rowMask[r] | colMask[c] | boxMask[boxIdx])) & 0x1FF;
 }
@@ -75,7 +89,7 @@ function getCandidates(r: number, c: number, rowMask: number[], colMask: number[
  * @example
  * bitCount(0b101); // 2
  */
-function bitCount(mask: number): number {
+export function bitCount(mask: number): number {
     let count = 0;
     let m = mask;
     while (m) {

@@ -27,6 +27,7 @@ export const COLORS = {
     cellActive: "#42455e",
     primaryFontColor: "#c6c7d6",
     secondaryFontColor: "#aab2ed",
+    primary: "#ff8f9f",
     borderColor: "#42455e",
     innerBorderColor: "#33354a",
 

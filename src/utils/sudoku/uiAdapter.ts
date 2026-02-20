@@ -1,5 +1,4 @@
-import type { Board, CellNum } from './types';
-import type { CellObject } from '../sudoku';
+import type { Board, CellNum, CellObject } from './types';
 
 /**
  * Parses string value to CellNum (0-9).
@@ -78,4 +77,55 @@ export function boardToCells(puzzle: Board, solution: Board): CellObject[] {
     }
   }
   return grid;
+}
+
+/**
+ * Converts a linear index (0-80) to row/column coordinates.
+ * @param index - Linear index from 0 to 80
+ * @returns Object with row (0-8) and column (0-8) properties
+ */
+export function indexToRowColumn(index: number): { row: number; column: number } {
+    return { row: index / 9 | 0, column: index % 9 };
+}
+
+/**
+ * Converts row/column coordinates to a linear index (0-80).
+ * @param row - Row number (0-8)
+ * @param column - Column number (0-8)
+ * @returns Linear index from 0 to 80
+ */
+export function rowColumnToIndex(row: number, column: number): number {
+    return row * 9 + column;
+}
+
+/**
+ * Initializes an empty Sudoku grid with 81 Cell objects, setting borders for 3x3 blocks.
+ * @returns Array of 81 Cell objects with default properties (all hidden, not visible, not readonly)
+ */
+export function initGrid(): CellObject[] {
+    const grid: CellObject[] = []
+    for (let row = 0; row < 9; row++) {
+        for (let column = 0; column < 9; column++) {
+            const index = rowColumnToIndex(row, column)
+            grid[index] = {
+                id: "cell-" + index,
+                index: index,
+                row: row,
+                column: column,
+                value: "",
+                hiddenValue: "",
+                isVisible: false,
+                isReadOnly: false,
+                hasVerticalBorder: false,
+                hasHorizontalBorder: false,
+            }
+            if (column === 2 || column === 5) {
+                grid[index].hasVerticalBorder = true;
+            }
+            if (row === 2 || row === 5) {
+                grid[index].hasHorizontalBorder = true;
+            }
+        }
+    }
+    return grid;
 }
