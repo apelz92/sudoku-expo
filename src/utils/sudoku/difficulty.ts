@@ -1,13 +1,11 @@
 import { Board, CellNum } from './types';
 
-// Difficulty scoring constants
 const DEPTH_BASELINE = 10;
 const DEPTH_WEIGHT = 2.0;
 const NAKED_SINGLE_WEIGHT = 0.5;
 const CLUES_WEIGHT = 1.5;
 const DIFFICULTY_THRESHOLDS = [10, 40, 100, 300]; // for levels 1-4
 
-// Clue count constants for puzzle generation
 export const EASY_MAX_CLUES = 60;
 export const HARD_MIN_CLUES = 20;
 export const CLUES_STEP = (EASY_MAX_CLUES - HARD_MIN_CLUES) / 4;
@@ -21,23 +19,13 @@ export const CLUE_RANGES_BY_DIFFICULTY = [
   { min: 17, max: 25 },
 ] as const;
 
-// Precomputed bit-to-number table: bitToNum[1<<k] = k+1 for k=0..8
 const bitToNum = new Uint8Array(512);
 for (let k = 0; k < 9; k++) bitToNum[1 << k] = k + 1;
 
 /**
- * Initializes bitmask constraint arrays from a board state.
- *
- * Each mask is 9-bit: bit k set if digit (k+1) used.
- * Scans board, sets bits for non-zero cells.
- * Used by difficulty assessment solvers.
- *
- * @param board - `number[][]` - Initial board (partial or full).
- * @returns `{ rowMask: number[]; colMask: number[]; boxMask: number[] }` - 9 masks each.
- *
- * @example
- * const {rowMask} = initConstraints(board);
- * // rowMask[0] has bits for used digits in row 0
+ * Initializes constraint masks for rows, columns, and boxes based on the current board state.
+ * @param board - The current Sudoku board as a 2D array.
+ * @returns An object containing rowMask, colMask, and boxMask arrays.
  */
 export function initConstraints(board: number[][]): { rowMask: number[], colMask: number[], boxMask: number[] } {
     const rowMask = new Array(9).fill(0);
@@ -58,20 +46,13 @@ export function initConstraints(board: number[][]): { rowMask: number[], colMask
 }
 
 /**
- * Computes bitmask of possible digits for a cell given constraints.
- *
- * Bits 0-8 correspond to digits 1-9. Available = ~(row | col | box) & 0x1FF.
- *
- * @param r - Row index (0-8).
- * @param c - Column index (0-8).
- * @param rowMask - Row masks.
- * @param colMask - Column masks.
- * @param boxMask - Box masks.
- * @returns `number` - Bitmask of candidates.
- *
- * @example
- * const cands = getCandidates(0, 0, rowMask, colMask, boxMask);
- * bitCount(cands); // e.g. 5 possible digits
+ * Gets the candidate numbers for a cell based on current constraints.
+ * @param r - Row index.
+ * @param c - Column index.
+ * @param rowMask - Row constraint masks.
+ * @param colMask - Column constraint masks.
+ * @param boxMask - Box constraint masks.
+ * @returns Bitmask of candidate numbers.
  */
 export function getCandidates(r: number, c: number, rowMask: number[], colMask: number[], boxMask: number[]): number {
     const boxIdx = Math.floor(r / 3) * 3 + Math.floor(c / 3);
@@ -79,15 +60,9 @@ export function getCandidates(r: number, c: number, rowMask: number[], colMask: 
 }
 
 /**
- * Counts set bits (population count) in a 9-bit mask using Kernighan algorithm.
- *
- * Efficient for small masks.
- *
- * @param mask - 9-bit integer mask.
- * @returns `number` - Number of 1-bits (0-9).
- *
- * @example
- * bitCount(0b101); // 2
+ * Counts the number of set bits in a bitmask.
+ * @param mask - The bitmask.
+ * @returns The number of set bits.
  */
 export function bitCount(mask: number): number {
     let count = 0;
@@ -100,22 +75,13 @@ export function bitCount(mask: number): number {
 }
 
 /**
- * Finds empty cell with Minimum Remaining Values (MRV heuristic), breaking ties randomly.
- *
- * Scans for 0 cells, computes candidates, selects lowest count (&lt;10).
- * Collects all with best count, picks randomly to reduce bias.
- * Immediate return if 0 candidates (dead-end). Returns null if solved.
- *
- * @param board - Current board copy.
- * @param rowMask - Row constraints.
- * @param colMask - Col constraints.
- * @param boxMask - Box constraints.
- * @param rng - Random number generator, defaults to Math.random.
- * @returns `{ row: number; col: number; candidates: number } | null` - Best cell or null.
- *
- * @example
- * const mrv = findMRVCell(boardCopy, rowMask, colMask, boxMask);
- * if (!mrv) console.log('solved');
+ * Finds the cell with the minimum remaining values (MRV) heuristic.
+ * @param board - The Sudoku board.
+ * @param rowMask - Row constraint masks.
+ * @param colMask - Column constraint masks.
+ * @param boxMask - Box constraint masks.
+ * @param rng - Random number generator function.
+ * @returns The selected cell with candidates or null if no empty cells.
  */
 function findMRVCell(board: number[][], rowMask: number[], colMask: number[], boxMask: number[], rng: () => number = Math.random): { row: number, col: number, candidates: number } | null {
     let bestCount = 10;
@@ -144,17 +110,9 @@ function findMRVCell(board: number[][], rowMask: number[], colMask: number[], bo
 }
 
 /**
- * Counts naked singles in the board deterministically.
- *
- * Naked single: empty cell with exactly one possible candidate.
- * Scans all empty cells, counts those with bitCount(candidates) === 1.
- *
- * @param board - `Board` - Puzzle board.
- * @returns `number` - Number of naked singles.
- *
- * @example
- * const singles = computeNakedSingles(puzzle);
- * console.log(singles); // e.g. 3
+ * Computes the number of naked singles in the board.
+ * @param board - The Sudoku board.
+ * @returns The number of naked singles.
  */
 function computeNakedSingles(board: Board): number {
     const { rowMask, colMask, boxMask } = initConstraints(board);
@@ -171,17 +129,9 @@ function computeNakedSingles(board: Board): number {
 }
 
 /**
- * Solves board and collects deterministic solving metrics.
- *
- * Uses backtracking with MRV, tracks backtracks, max depth, nodes visited.
- * Non-mutating, works on copy.
- *
- * @param board - `Board` - Puzzle to solve.
- * @returns `{ backtracks: number; maxDepth: number; nodesVisited: number }` - Metrics.
- *
- * @example
- * const metrics = solveWithMetrics(puzzle);
- * console.log(metrics.backtracks); // e.g. 5
+ * Solves the Sudoku board using backtracking and collects solving metrics.
+ * @param board - The Sudoku board.
+ * @returns An object with backtracks, maxDepth, and nodesVisited.
  */
 function solveWithMetrics(board: Board): { backtracks: number; maxDepth: number; nodesVisited: number } {
     let backtracks = 0;
@@ -223,7 +173,7 @@ function solveWithMetrics(board: Board): { backtracks: number; maxDepth: number;
 }
 
 /**
- * Assesses the difficulty of a puzzle using deterministic metrics.
+ * Assesses the difficulty of a Sudoku puzzle using backtracking metrics and heuristics.
  */
 export function assessDifficulty(board: Board): { difficulty: number; backtracks: number; maxDepth: number; nakedSingles: number; clues: number } {
     let clues = 0;
@@ -234,8 +184,6 @@ export function assessDifficulty(board: Board): { difficulty: number; backtracks
     }
     const nakedSingles = computeNakedSingles(board);
     const { backtracks, maxDepth, nodesVisited } = solveWithMetrics(board);
-    // Note: normalizedDepth = maxDepth / (81 - clues), but not used in score yet
-    // Weighted score combining signals (kept compatible)
     const score = backtracks + Math.max(0, maxDepth - DEPTH_BASELINE) * DEPTH_WEIGHT - nakedSingles * NAKED_SINGLE_WEIGHT + (81 - clues) * CLUES_WEIGHT;
     let difficulty = 0;
     if (score > DIFFICULTY_THRESHOLDS[3]) difficulty = 4;

@@ -1,12 +1,19 @@
 /**
- * Generic Fisher-Yates shuffle function.
+ * @fileoverview Random utility functions for Sudoku generation.
+ * Provides shuffling algorithms used in board permutation and puzzle creation.
+ */
+
+/**
+ * Generic Fisher-Yates shuffle implementing the modern variant for unbiased permutation.
  *
- * Shuffles array in-place using provided RNG for uniform permutation.
- * Time O(n), space O(1).
+ * Modifies the array in-place. Uses provided RNG or Math.random for reproducibility in testing.
  *
- * @param arr - Array to shuffle in-place.
- * @param rng - Random number generator, defaults to Math.random.
- * @returns `void` - Modifies arr in-place.
+ * Time: O(n), Space: O(1)
+ *
+ * @template T
+ * @param {T[]} arr - Array to shuffle in-place.
+ * @param {() => number} [rng=Math.random] - RNG function returning [0,1) uniform random.
+ * @returns {void}
  *
  * @example
  * const arr = [1,2,3,4,5];

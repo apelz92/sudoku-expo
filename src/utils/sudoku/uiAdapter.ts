@@ -1,17 +1,9 @@
 import type { Board, CellNum, CellObject } from './types';
 
 /**
- * Parses string value to CellNum (0-9).
- *
- * Empty string -> 0, single digit 1-9 -> number, else 0.
- *
- * @param value - String to parse.
- * @returns `CellNum` - 0 or 1-9.
- *
- * @example
- * parseCellValue('5'); // 5
- * parseCellValue(''); // 0
- * parseCellValue('10'); // 0
+ * Parses a string value into a valid CellNum (0-9).
+ * @param value - The string to parse.
+ * @returns The parsed CellNum, or 0 if invalid.
  */
 export function parseCellValue(value: string): CellNum {
   if (value === '') return 0;
@@ -20,16 +12,9 @@ export function parseCellValue(value: string): CellNum {
 }
 
 /**
- * Converts CellObject[] to Board.
- *
- * Maps each cell's value via parseCellValue to board[r][c].
- *
- * @param cells - 81 CellObjects.
- * @returns `Board` - Numeric board.
- *
- * @example
- * const board = cellsToBoard(grid);
- * console.log(board[0][0]); // 0 or 1-9
+ * Converts an array of CellObject to a Board.
+ * @param cells - The array of cell objects.
+ * @returns The corresponding Board.
  */
 export function cellsToBoard(cells: CellObject[]): Board {
   const board: Board = Array.from({ length: 9 }, () => Array(9).fill(0) as CellNum[]);
@@ -42,17 +27,10 @@ export function cellsToBoard(cells: CellObject[]): Board {
 }
 
 /**
- * Converts Board puzzle and solution to CellObject[].
- *
- * Creates 81 cells with value from puzzle, hiddenValue from solution, visible/readonly if val !== 0, borders for 3x3.
- *
- * @param puzzle - Puzzle Board.
- * @param solution - Solution Board.
- * @returns `CellObject[]` - 81 cells.
- *
- * @example
- * const grid = boardToCells(puzzle, solution);
- * console.log(grid[0].isVisible); // true if puzzle[0][0] !== 0
+ * Converts a puzzle board and solution board to an array of CellObject for UI.
+ * @param puzzle - The puzzle board.
+ * @param solution - The solution board.
+ * @returns An array of CellObject.
  */
 export function boardToCells(puzzle: Board, solution: Board): CellObject[] {
   const grid: CellObject[] = [];
@@ -80,27 +58,27 @@ export function boardToCells(puzzle: Board, solution: Board): CellObject[] {
 }
 
 /**
- * Converts a linear index (0-80) to row/column coordinates.
- * @param index - Linear index from 0 to 80
- * @returns Object with row (0-8) and column (0-8) properties
+ * Converts a linear cell index to row and column.
+ * @param index - The linear index (0-80).
+ * @returns An object with row and column.
  */
 export function indexToRowColumn(index: number): { row: number; column: number } {
     return { row: index / 9 | 0, column: index % 9 };
 }
 
 /**
- * Converts row/column coordinates to a linear index (0-80).
- * @param row - Row number (0-8)
- * @param column - Column number (0-8)
- * @returns Linear index from 0 to 80
+ * Converts row and column to a linear cell index.
+ * @param row - Row index.
+ * @param column - Column index.
+ * @returns The linear index (0-80).
  */
 export function rowColumnToIndex(row: number, column: number): number {
     return row * 9 + column;
 }
 
 /**
- * Initializes an empty Sudoku grid with 81 Cell objects, setting borders for 3x3 blocks.
- * @returns Array of 81 Cell objects with default properties (all hidden, not visible, not readonly)
+ * Initializes an empty grid of CellObject for the UI.
+ * @returns An array of 81 empty CellObject.
  */
 export function initGrid(): CellObject[] {
     const grid: CellObject[] = []

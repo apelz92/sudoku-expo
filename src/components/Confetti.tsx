@@ -1,3 +1,10 @@
+/**
+ * @fileoverview React component for rendering canvas-based confetti effects using the canvas-confetti library.
+ * Provides a forwardRef component that manages a confetti instance, allowing programmatic firing of confetti animations.
+ * Supports global options for resizing and worker usage, and can be controlled manually or auto-start.
+ * Includes a context provider for sharing the confetti API with child components.
+ */
+
 import type { ReactNode } from "react"
 import React, {
     createContext,
@@ -15,10 +22,21 @@ import type {
 } from "canvas-confetti"
 import confetti from "canvas-confetti"
 
+/**
+ * @typedef {Object} Api
+ * @property {function(ConfettiOptions=): void} fire - Triggers the confetti animation with optional configuration overrides.
+ */
 type Api = {
     fire: (options?: ConfettiOptions) => void
 }
 
+/**
+ * @typedef {Object} Props
+ * @property {ConfettiOptions} [options] - Default confetti options for the animation.
+ * @property {ConfettiGlobalOptions} [globalOptions] - Global options for the confetti instance, such as resize and worker settings.
+ * @property {boolean} [manualstart] - If true, prevents automatic firing on mount; requires manual triggering via ref.
+ * @property {ReactNode} [children] - Child components to render within the confetti context.
+ */
 type Props = React.ComponentPropsWithRef<"canvas"> & {
     options?: ConfettiOptions
     globalOptions?: ConfettiGlobalOptions
@@ -26,11 +44,23 @@ type Props = React.ComponentPropsWithRef<"canvas"> & {
     children?: ReactNode
 }
 
+/**
+ * @typedef {Api | null} ConfettiRef - Ref type for the Confetti component, exposing the API or null if not initialized.
+ */
 export type ConfettiRef = Api | null
 
+/**
+ * @const {React.Context<Api>} ConfettiContext - React context for sharing the confetti API with child components.
+ */
 const ConfettiContext = createContext<Api>({} as Api)
 
 // Define component first
+/**
+ * @function ConfettiComponent
+ * @param {Props} props - Component props including options, globalOptions, manualstart, and children.
+ * @param {React.Ref<ConfettiRef>} ref - Ref to access the confetti API.
+ * @returns {JSX.Element} The rendered canvas element wrapped in a context provider.
+ */
 const ConfettiComponent = forwardRef<ConfettiRef, Props>((props, ref) => {
     const {
         options,
@@ -41,6 +71,10 @@ const ConfettiComponent = forwardRef<ConfettiRef, Props>((props, ref) => {
     } = props
     const instanceRef = useRef<ConfettiInstance | null>(null)
 
+    /**
+     * @callback canvasRef
+     * @param {HTMLCanvasElement | null} node - The canvas element to attach the confetti instance to, or null to clean up.
+     */
     const canvasRef = useCallback(
         (node: HTMLCanvasElement) => {
             if (node !== null) {
@@ -59,6 +93,11 @@ const ConfettiComponent = forwardRef<ConfettiRef, Props>((props, ref) => {
         [globalOptions]
     )
 
+    /**
+     * @function fire
+     * @param {ConfettiOptions} [opts={}] - Optional confetti options to override defaults.
+     * @returns {Promise<void>} A promise that resolves when the confetti animation completes.
+     */
     const fire = useCallback(
         async (opts = {}) => {
             try {
@@ -70,6 +109,9 @@ const ConfettiComponent = forwardRef<ConfettiRef, Props>((props, ref) => {
         [options]
     )
 
+    /**
+     * @const {Api} api - Memoized API object containing the fire method, updated when fire changes.
+     */
     const api = useMemo(
         () => ({
             fire,

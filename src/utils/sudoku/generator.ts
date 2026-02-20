@@ -1,18 +1,10 @@
 import { Board } from './types';
 import { shuffle } from './random';
-
 import { CellNum } from './types';
 
 /**
- * Generates permutation of row indices by shuffling bands and rows within bands.
- *
- * Shuffles band order (0,1,2), then for each band shuffles rows (0,1,2), appends to list.
- * Produces varied row ordering for board generation.
- *
- * @returns `number[]` - 9 row indices in permuted order.
- *
- * @example
- * const rows = permuteBands(); // e.g. [6,7,8,0,1,2,3,4,5]
+ * Permutes the row bands for Sudoku generation.
+ * @returns An array of permuted row indices.
  */
 function permuteBands(): number[] {
     const bands = [0, 1, 2];
@@ -27,15 +19,8 @@ function permuteBands(): number[] {
 }
 
 /**
- * Generates permutation of column indices by shuffling stacks and columns within stacks.
- *
- * Shuffles stack order (0,1,2), then for each stack shuffles columns (0,1,2), appends to list.
- * Produces varied column ordering for board generation.
- *
- * @returns `number[]` - 9 column indices in permuted order.
- *
- * @example
- * const cols = permuteStacks(); // e.g. [3,4,5,0,1,2,6,7,8]
+ * Permutes the column stacks for Sudoku generation.
+ * @returns An array of permuted column indices.
  */
 function permuteStacks(): number[] {
     const stacks = [0, 1, 2];
@@ -50,16 +35,8 @@ function permuteStacks(): number[] {
 }
 
 /**
- * Fills Sudoku board with valid solution using shuffled bands and stacks for variety.
- *
- * Uses base pattern ((r*3 + floor(r/3) + c) % 9) + 1, applies permuted rows and cols.
- * Always produces valid solution due to pattern properties.
- *
- * @returns `Board` - Fully filled valid Sudoku solution.
- *
- * @example
- * const solution = fillGrid();
- * console.log(isValidBoard(solution)); // true
+ * Generates a filled Sudoku grid.
+ * @returns A complete Sudoku board.
  */
 export function fillGrid(): Board {
     const base: Board = Array.from({ length: 9 }, () => Array(9).fill(0));
@@ -75,20 +52,11 @@ export function fillGrid(): Board {
 }
 
 /**
- * Removes cells from solved Sudoku board in single pass to achieve unique solution with at least target clues.
- *
- * Shuffles indices 0-80, tries removing each cell once, restores if uniqueness lost (countSolutions(board, 2) !== 1).
- * Stops when clues <= targetClues.
- * Non-mutating, returns new board.
- *
- * @param solvedBoard - Fully solved `Board`.
- * @param targetClues - Minimum clues to retain.
- * @param countSolutions - Function to count solutions, with optional maxCount.
- * @returns `Board` - Puzzle with cells removed, unique solution.
- *
- * @example
- * const puzzle = removeCellsForUniqueOnce(solution, 40, fastCountSolutions);
- * console.log(fastCountSolutions(puzzle)); // 1
+ * Removes cells from a solved board to create a puzzle with a unique solution and target number of clues.
+ * @param solvedBoard - The fully solved Sudoku board.
+ * @param targetClues - The desired number of clues in the puzzle.
+ * @param countSolutions - Function to count the number of solutions for a board.
+ * @returns A Sudoku board with the target number of clues and a unique solution.
  */
 export function removeCellsForUniqueOnce(
     solvedBoard: Board,

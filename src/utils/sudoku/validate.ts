@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Validation and solving utilities for Sudoku boards.
+ * Provides functions to validate partial and complete boards, solve puzzles using backtracking with MRV heuristic,
+ * and count solutions. Uses bitmask constraints for efficient constraint propagation.
+ */
+
 import {Board, CellNum} from './types';
 import {bitCount, getCandidates, initConstraints} from "./difficulty.ts";
 
@@ -7,8 +13,12 @@ for (let k = 0; k < 9; k++) bitToNum[1 << k] = k + 1;
 
 /**
  * Finds the empty cell with the Minimum Remaining Values (fewest candidates).
- * Returns null if no empty cells exist (board is solved).
- * Returns the cell coordinates and its candidate bitmask.
+ * Uses MRV heuristic to select the most constrained empty cell for backtracking efficiency.
+ * @param board - 9x9 Board to search
+ * @param rowMask - Row constraint bitmasks
+ * @param colMask - Column constraint bitmasks
+ * @param boxMask - Box constraint bitmasks
+ * @returns {{row: number, col: number, candidates: number} | null} Cell coordinates and candidate bitmask, or null if solved
  */
 function findMRVCell(board: Board, rowMask: number[], colMask: number[], boxMask: number[]): { row: number, col: number, candidates: number } | null {
     let bestRow = -1, bestCol = -1, bestCount = 10, bestCandidates = 0;
@@ -34,7 +44,14 @@ function findMRVCell(board: Board, rowMask: number[], colMask: number[], boxMask
 }
 
 /**
- * Common backtracking implementation for solving/counting solutions.
+ * Common backtracking implementation for solving or counting solutions.
+ * Recursively tries candidates for empty cells using MRV heuristic.
+ * @param boardCopy - Mutable copy of the board
+ * @param rowMask - Row constraint bitmasks (modified in place)
+ * @param colMask - Column constraint bitmasks (modified in place)
+ * @param boxMask - Box constraint bitmasks (modified in place)
+ * @param onSolve - Callback invoked when a solution is found
+ * @returns {boolean} true if a solution was found, false otherwise
  */
 function backtrackImpl(boardCopy: Board, rowMask: number[], colMask: number[], boxMask: number[], onSolve: () => boolean): boolean {
     const cell = findMRVCell(boardCopy, rowMask, colMask, boxMask);
@@ -60,8 +77,10 @@ function backtrackImpl(boardCopy: Board, rowMask: number[], colMask: number[], b
 }
 
 /**
- * Solves a board using bitmask constraints and MRV.
+ * Solves a board using bitmask constraints and MRV heuristic.
  * Returns a solved copy of the board, or null if unsolvable.
+ * @param board - 9x9 Board to solve (not modified)
+ * @returns {Board | null} Solved board copy or null if no solution
  */
 export function solveBoard(board: Board): Board | null {
     const boardCopy = board.map(row => [...row]);
@@ -86,6 +105,14 @@ export function countSolutions(board: Board, maxCount: number = 2): number {
     return count;
 }
 
+/**
+ * Checks if a value can be placed without violating uniqueness constraints.
+ * Updates the seen mask if valid.
+ * @param seenMask - Bitmask of values already seen in the current group
+ * @param val - Value to check (0-9)
+ * @param allowZero - Whether zero (empty) is allowed
+ * @returns {{mask: number, valid: boolean}} Updated mask and validity status
+ */
 function checkValue(seenMask: number, val: number, allowZero: boolean): { mask: number, valid: boolean } {
     if (allowZero && val === 0) return { mask: seenMask, valid: true };
     const bit = 1 << (val - 1);
