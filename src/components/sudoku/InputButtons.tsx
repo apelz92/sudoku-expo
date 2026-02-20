@@ -18,6 +18,25 @@ const StyledNumberRow = styled.View<StyledNumberRowProps>`
   height: ${({ $height }) => $height}px;
 `;
 
+const StyledSolveButton = styled.TouchableOpacity<{ cellSize: number }>`
+  border-radius: 6px;
+  background-color: ${COLORS.primary};
+  border-width: 2px;
+  border-color: ${COLORS.primary};
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 3px;
+  width: ${({ cellSize }) => Math.floor(cellSize * 1.6)}px;
+  height: ${({ cellSize }) => cellSize}px;
+  margin: ${({ cellSize }) => Math.floor(cellSize / 10)}px;
+`;
+
+const StyledSolveText = styled.Text<{ fontSize: number }>`
+  color: ${COLORS.primaryFontColor};
+  font-weight: 700;
+  font-size: ${({ fontSize }) => fontSize}px;
+`;
+
 type InputButtonProps = {
   activeCell: number | null;
   updateCell: (index: number, value: string) => void;
@@ -25,7 +44,9 @@ type InputButtonProps = {
   setDragValue: (v: string | null) => void;
   handleDragMove: (x: number, y: number) => void;
   handleDropRelease: (x: number, y: number) => void;
+  onSolve?: () => void;
 };
+
 
 export default function InputButtons({
   activeCell,
@@ -34,6 +55,7 @@ export default function InputButtons({
   setDragValue,
   handleDragMove,
   handleDropRelease,
+  onSolve,
 }: InputButtonProps) {
   const { cellSize } = useSizes();
 
@@ -73,6 +95,13 @@ export default function InputButtons({
           borderWidth: 2,
         }}
       />
+      {onSolve && (
+        <StyledSolveButton cellSize={cellSize} onPress={onSolve}>
+          <StyledSolveText fontSize={Math.floor((Math.floor(cellSize * 1.6)) / 3)}>
+            Solve
+          </StyledSolveText>
+        </StyledSolveButton>
+      )}
     </StyledNumberRow>
   );
 }
